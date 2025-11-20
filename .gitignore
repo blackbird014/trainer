@@ -10,6 +10,9 @@ output/html/*.html
 !output/pdf/.gitkeep
 !output/html/.gitkeep
 
+# Allow index.html for GitHub Pages
+!index.html
+
 # Editor files
 .vscode/
 .idea/
