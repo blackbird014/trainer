@@ -2,7 +2,8 @@
 output/json/*.json
 output/report/*.md
 output/pdf/*.pdf
-output/html/*.html
+# Allow HTML files in output/html/ for GitHub Pages linking
+# output/html/*.html
 
 # Keep directory structure
 !output/json/.gitkeep

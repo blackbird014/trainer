@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Analysis Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            padding-top: 20px;
+            border-top: 2px solid #ecf0f1;
+        }
+        
+        h3 {
+            color: #555;
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+        
+        h4 {
+            color: #666;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .meta {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 30px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        th {
+            background-color: #3498db;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .insights {
+            background: #e8f4f8;
+            border-left: 4px solid #3498db;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .insights ul {
+            margin-left: 20px;
+        }
+        
+        .insights li {
+            margin: 8px 0;
+        }
+        
+        .company-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #ecf0f1;
+            color: #7f8c8d;
+            font-size: 0.9em;
+            text-align: center;
+        }
+        
+        .negative {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+        
+        .positive {
+            color: #27ae60;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            table {
+                font-size: 0.85em;
+            }
+            
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stock Analysis Report</h1>
+        <div class="meta">
+            <strong>Generated:</strong> November 19, 2025<br>
+            <strong>Tickers Analyzed:</strong> AAPL, NVDA, MU, PLTR, IONQ
+        </div>
+
+        <h2>📊 Summary Dashboard</h2>
+        
+        <h3>Key Metrics Overview</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Ticker</th>
+                    <th>Market Cap</th>
+                    <th>Forward P/E</th>
+                    <th>Trailing P/E</th>
+                    <th>Revenue (TTM)</th>
+                    <th>Profit Margin</th>
+                    <th>ROE</th>
+                    <th>Quarterly Rev Growth</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>AAPL</strong></td>
+                    <td>3.95T</td>
+                    <td>32.26</td>
+                    <td>35.85</td>
+                    <td>416.16B</td>
+                    <td class="positive">26.92%</td>
+                    <td class="positive">171.42%</td>
+                    <td class="positive">7.90%</td>
+                </tr>
+                <tr>
+                    <td><strong>NVDA</strong></td>
+                    <td>4.42T</td>
+                    <td>26.95</td>
+                    <td>51.67</td>
+                    <td>165.22B</td>
+                    <td class="positive">52.41%</td>
+                    <td class="positive">109.42%</td>
+                    <td class="positive">55.60%</td>
+                </tr>
+                <tr>
+                    <td><strong>MU</strong></td>
+                    <td>256.48B</td>
+                    <td>14.35</td>
+                    <td>30.11</td>
+                    <td>37.38B</td>
+                    <td class="positive">22.85%</td>
+                    <td class="positive">17.20%</td>
+                    <td class="positive">46.00%</td>
+                </tr>
+                <tr>
+                    <td><strong>PLTR</strong></td>
+                    <td>398.82B</td>
+                    <td>166.67</td>
+                    <td>1.56k</td>
+                    <td>3.9B</td>
+                    <td class="positive">28.11%</td>
+                    <td class="positive">19.50%</td>
+                    <td class="positive">62.80%</td>
+                </tr>
+                <tr>
+                    <td><strong>IONQ</strong></td>
+                    <td>17.40B</td>
+                    <td>--</td>
+                    <td>--</td>
+                    <td>79.84M</td>
+                    <td>0.00%</td>
+                    <td class="negative">-107.76%</td>
+                    <td class="positive">221.50%</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="insights">
+            <h3>Quick Insights</h3>
+            <ul>
+                <li><strong>Largest Market Cap:</strong> NVDA (4.42T) followed by AAPL (3.95T)</li>
+                <li><strong>Best Profit Margin:</strong> NVDA (52.41%)</li>
+                <li><strong>Highest Growth:</strong> IONQ (221.50% quarterly revenue growth)</li>
+                <li><strong>Most Profitable:</strong> NVDA (52.41% profit margin, 60.84% operating margin)</li>
+                <li><strong>Best Value:</strong> MU (Forward P/E: 14.35)</li>
+            </ul>
+        </div>
+
+        <h2>📈 Individual Company Profiles</h2>
+
+        <div class="company-section">
+            <h3>AAPL - Apple Inc.</h3>
+            <div class="meta"><strong>Extracted:</strong> November 19, 2025, 13:48 UTC</div>
+            
+            <h4>Valuation Metrics</h4>
+            <table>
+                <tr><th>Metric</th><th>Value</th></tr>
+                <tr><td>Market Cap</td><td>3.95T</td></tr>
+                <tr><td>Enterprise Value</td><td>4.00T</td></tr>
+                <tr><td>Trailing P/E</td><td>35.85</td></tr>
+                <tr><td>Forward P/E</td><td>32.26</td></tr>
+                <tr><td>Price/Sales</td><td>9.64</td></tr>
+                <tr><td>Price/Book</td><td>53.60</td></tr>
+                <tr><td>EV/Revenue</td><td>9.60</td></tr>
+                <tr><td>EV/EBITDA</td><td>27.60</td></tr>
+            </table>
+
+            <h4>Financial Metrics</h4>
+            <table>
+                <tr><th>Metric</th><th>Value</th></tr>
+                <tr><td>Revenue (TTM)</td><td>416.16B</td></tr>
+                <tr><td>Revenue Per Share</td><td>27.84</td></tr>
+                <tr><td>Quarterly Revenue Growth (YoY)</td><td class="positive">7.90%</td></tr>
+                <tr><td>Gross Profit</td><td>195.2B</td></tr>
+                <tr><td>EBITDA</td><td>144.75B</td></tr>
+                <tr><td>Net Income</td><td>112.01B</td></tr>
+                <tr><td>Earnings Per Share</td><td>7.46</td></tr>
+                <tr><td>Quarterly Earnings Growth (YoY)</td><td class="positive">86.40%</td></tr>
+            </table>
+
+            <h4>Profitability Metrics</h4>
+            <table>
+                <tr><th>Metric</th><th>Value</th></tr>
+                <tr><td>Profit Margin</td><td class="positive">26.92%</td></tr>
+                <tr><td>Operating Margin</td><td class="positive">31.65%</td></tr>
+                <tr><td>Return on Assets (ROA)</td><td class="positive">22.96%</td></tr>
+                <tr><td>Return on Equity (ROE)</td><td class="positive">171.42%</td></tr>
+            </table>
+        </div>
+
+        <div class="company-section">
+            <h3>NVDA - NVIDIA Corporation</h3>
+            <div class="meta"><strong>Extracted:</strong> November 19, 2025, 13:48 UTC</div>
+            
+            <h4>Valuation Metrics</h4>
+            <table>
+                <tr><th>Metric</th><th>Value</th></tr>
+                <tr><td>Market Cap</td><td>4.42T</td></tr>
+                <tr><td>Enterprise Value</td><td>4.37T</td></tr>
+                <tr><td>Trailing P/E</td><td>51.67</td></tr>
+                <tr><td>Forward P/E</td><td>26.95</td></tr>
+                <tr><td>Price/Sales</td><td>27.06</td></tr>
+                <tr><td>Price/Book</td><td>44.10</td></tr>
+                <tr><td>EV/Revenue</td><td>26.46</td></tr>
+                <tr><td>EV/EBITDA</td><td>42.37</td></tr>
+            </table>
+
+            <h4>Financial Metrics</h4>
+            <table>
+                <tr><th>Metric</th><th>Value</th></tr>
+                <tr><td>Revenue (TTM)</td><td>165.22B</td></tr>
+                <tr><td>Revenue Per Share</td><td>6.76</td></tr>
+                <tr><td>Quarterly Revenue Growth (YoY)</td><td class="positive">55.60%</td></tr>
+                <tr><td>Gross Profit</td><td>115.4B</td></tr>
+                <tr><td>EBITDA</td><td>98.28B</td></tr>
+                <tr><td>Net Income</td><td>86.6B</td></tr>
+                <tr><td>Earnings Per Share</td><td>3.52</td></tr>
+                <tr><td>Quarterly Earnings Growth (YoY)</td><td class="positive">59.20%</td></tr>
+            </table>
+
+            <h4>Profitability Metrics</h4>
+            <table>
+                <tr><th>Metric</th><th>Value</th></tr>
+                <tr><td>Profit Margin</td><td class="positive">52.41%</td></tr>
+                <tr><td>Operating Margin</td><td class="positive">60.84%</td></tr>
+                <tr><td>Return on Assets (ROA)</td><td class="positive">53.09%</td></tr>
+                <tr><td>Return on Equity (ROE)</td><td class="positive">109.42%</td></tr>
+            </table>
+        </div>
+
+        <div class="company-section">
+            <h3>MU - Micron Technology, Inc.</h3>
+            <div class="meta"><strong>Extracted:</strong> November 19, 2025, 13:48 UTC</div>
+            
+            <h4>Valuation Metrics</h4>
+            <table>
+                <tr><th>Metric</th><th>Value</th></tr>
+                <tr><td>Market Cap</td><td>256.48B</td></tr>
+                <tr><td>Enterprise Value</td><td>261.45B</td></tr>
+                <tr><td>Trailing P/E</td><td>30.11</td></tr>
+                <tr><td>Forward P/E</td><td>14.35</td></tr>
+                <tr><td>Price/Sales</td><td>6.88</td></tr>
+                <tr><td>Price/Book</td><td>4.74</td></tr>
+                <tr><td>EV/Revenue</td><td>6.99</td></tr>
+                <tr><td>EV/EBITDA</td><td>14.15</td></tr>
+            </table>
+
+            <h4>Financial Metrics</h4>
+            <table>
+                <tr><th>Metric</th><th>Value</th></tr>
+                <tr><td>Revenue (TTM)</td><td>37.38B</td></tr>
+                <tr><td>Revenue Per Share</td><td>33.49</td></tr>
+                <tr><td>Quarterly Revenue Growth (YoY)</td><td class="positive">46.00%</td></tr>
+                <tr><td>Gross Profit</td><td>14.87B</td></tr>
+                <tr><td>EBITDA</td><td>18.09B</td></tr>
+                <tr><td>Net Income</td><td>8.54B</td></tr>
+                <tr><td>Earnings Per Share</td><td>7.59</td></tr>
+                <tr><td>Quarterly Earnings Growth (YoY)</td><td class="positive">260.90%</td></tr>
+            </table>
+
+            <h4>Profitability Metrics</h4>
+            <table>
+                <tr><th>Metric</th><th>Value</th></tr>
+                <tr><td>Profit Margin</td><td class="positive">22.85%</td></tr>
+                <tr><td>Operating Margin</td><td class="positive">32.64%</td></tr>
+                <tr><td>Return on Assets (ROA)</td><td class="positive">8.06%</td></tr>
+                <tr><td>Return on Equity (ROE)</td><td class="positive">17.20%</td></tr>
+            </table>
+        </div>
+
+        <div class="company-section">
+            <h3>PLTR - Palantir Technologies Inc.</h3>
+            <div class="meta"><strong>Extracted:</strong> November 19, 2025, 13:48 UTC</div>
+            
+            <h4>Valuation Metrics</h4>
+            <table>
+                <tr><th>Metric</th><th>Value</th></tr>
+                <tr><td>Market Cap</td><td>398.82B</td></tr>
+                <tr><td>Enterprise Value</td><td>392.62B</td></tr>
+                <tr><td>Trailing P/E</td><td>1.56k</td></tr>
+                <tr><td>Forward P/E</td><td>166.67</td></tr>
+                <tr><td>Price/Sales</td><td>438.74</td></tr>
+                <tr><td>Price/Book</td><td>60.51</td></tr>
+                <tr><td>EV/Revenue</td><td>100.77</td></tr>
+                <tr><td>EV/EBITDA</td><td>448.30</td></tr>
+            </table>
+
+            <h4>Financial Metrics</h4>
+            <table>
+                <tr><th>Metric</th><th>Value</th></tr>
+                <tr><td>Revenue (TTM)</td><td>3.9B</td></tr>
+                <tr><td>Revenue Per Share</td><td>0.41</td></tr>
+                <tr><td>Quarterly Revenue Growth (YoY)</td><td class="positive">62.80%</td></tr>
+                <tr><td>Gross Profit</td><td>3.15B</td></tr>
+                <tr><td>EBITDA</td><td>875.8M</td></tr>
+                <tr><td>Net Income</td><td>1.1B</td></tr>
+                <tr><td>Earnings Per Share</td><td>0.10</td></tr>
+                <tr><td>Quarterly Earnings Growth (YoY)</td><td class="positive">231.40%</td></tr>
+            </table>
+
+            <h4>Profitability Metrics</h4>
+            <table>
+                <tr><th>Metric</th><th>Value</th></tr>
+                <tr><td>Profit Margin</td><td class="positive">28.11%</td></tr>
+                <tr><td>Operating Margin</td><td class="positive">33.30%</td></tr>
+                <tr><td>Return on Assets (ROA)</td><td class="positive">7.65%</td></tr>
+                <tr><td>Return on Equity (ROE)</td><td class="positive">19.50%</td></tr>
+            </table>
+        </div>
+
+        <div class="company-section">
+            <h3>IONQ - IonQ, Inc.</h3>
+            <div class="meta"><strong>Extracted:</strong> November 19, 2025, 13:49 UTC</div>
+            
+            <h4>Valuation Metrics</h4>
+            <table>
+                <tr><th>Metric</th><th>Value</th></tr>
+                <tr><td>Market Cap</td><td>17.40B</td></tr>
+                <tr><td>Enterprise Value</td><td>16.35B</td></tr>
+                <tr><td>Trailing P/E</td><td>--</td></tr>
+                <tr><td>Forward P/E</td><td>--</td></tr>
+                <tr><td>Price/Sales</td><td>152.73</td></tr>
+                <tr><td>Price/Book</td><td>7.65</td></tr>
+                <tr><td>EV/Revenue</td><td>204.82</td></tr>
+                <tr><td>EV/EBITDA</td><td class="negative">-10.33</td></tr>
+            </table>
+
+            <h4>Financial Metrics</h4>
+            <table>
+                <tr><th>Metric</th><th>Value</th></tr>
+                <tr><td>Revenue (TTM)</td><td>79.84M</td></tr>
+                <tr><td>Revenue Per Share</td><td>0.32</td></tr>
+                <tr><td>Quarterly Revenue Growth (YoY)</td><td class="positive">221.50%</td></tr>
+                <tr><td>Gross Profit</td><td>41.75M</td></tr>
+                <tr><td>EBITDA</td><td class="negative">-407.92M</td></tr>
+                <tr><td>Net Income</td><td class="negative">-1.47B</td></tr>
+                <tr><td>Earnings Per Share</td><td class="negative">-5.84</td></tr>
+                <tr><td>Quarterly Earnings Growth (YoY)</td><td>--</td></tr>
+            </table>
+
+            <h4>Profitability Metrics</h4>
+            <table>
+                <tr><th>Metric</th><th>Value</th></tr>
+                <tr><td>Profit Margin</td><td>0.00%</td></tr>
+                <tr><td>Operating Margin</td><td class="negative">-423.45%</td></tr>
+                <tr><td>Return on Assets (ROA)</td><td class="negative">-11.77%</td></tr>
+                <tr><td>Return on Equity (ROE)</td><td class="negative">-107.76%</td></tr>
+            </table>
+            
+            <div class="note">
+                <strong>Note:</strong> IONQ is a pre-profit company with negative earnings. High revenue growth (221.50%) indicates strong potential but current losses are expected for a growth-stage company.
+            </div>
+        </div>
+
+        <h2>🔄 Comparison Tables</h2>
+
+        <h3>Valuation Comparison</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>AAPL</th>
+                    <th>NVDA</th>
+                    <th>MU</th>
+                    <th>PLTR</th>
+                    <th>IONQ</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Market Cap</strong></td><td>3.95T</td><td>4.42T</td><td>256.48B</td><td>398.82B</td><td>17.40B</td></tr>
+                <tr><td><strong>Enterprise Value</strong></td><td>4.00T</td><td>4.37T</td><td>261.45B</td><td>392.62B</td><td>16.35B</td></tr>
+                <tr><td><strong>Trailing P/E</strong></td><td>35.85</td><td>51.67</td><td>30.11</td><td>1.56k</td><td>--</td></tr>
+                <tr><td><strong>Forward P/E</strong></td><td>32.26</td><td>26.95</td><td>14.35</td><td>166.67</td><td>--</td></tr>
+                <tr><td><strong>Price/Sales</strong></td><td>9.64</td><td>27.06</td><td>6.88</td><td>438.74</td><td>152.73</td></tr>
+                <tr><td><strong>Price/Book</strong></td><td>53.60</td><td>44.10</td><td>4.74</td><td>60.51</td><td>7.65</td></tr>
+                <tr><td><strong>EV/Revenue</strong></td><td>9.60</td><td>26.46</td><td>6.99</td><td>100.77</td><td>204.82</td></tr>
+                <tr><td><strong>EV/EBITDA</strong></td><td>27.60</td><td>42.37</td><td>14.15</td><td>448.30</td><td class="negative">-10.33</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Financial Performance Comparison</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>AAPL</th>
+                    <th>NVDA</th>
+                    <th>MU</th>
+                    <th>PLTR</th>
+                    <th>IONQ</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Revenue (TTM)</strong></td><td>416.16B</td><td>165.22B</td><td>37.38B</td><td>3.9B</td><td>79.84M</td></tr>
+                <tr><td><strong>Revenue Per Share</strong></td><td>27.84</td><td>6.76</td><td>33.49</td><td>0.41</td><td>0.32</td></tr>
+                <tr><td><strong>Quarterly Rev Growth</strong></td><td class="positive">7.90%</td><td class="positive">55.60%</td><td class="positive">46.00%</td><td class="positive">62.80%</td><td class="positive">221.50%</td></tr>
+                <tr><td><strong>Gross Profit</strong></td><td>195.2B</td><td>115.4B</td><td>14.87B</td><td>3.15B</td><td>41.75M</td></tr>
+                <tr><td><strong>EBITDA</strong></td><td>144.75B</td><td>98.28B</td><td>18.09B</td><td>875.8M</td><td class="negative">-407.92M</td></tr>
+                <tr><td><strong>Net Income</strong></td><td>112.01B</td><td>86.6B</td><td>8.54B</td><td>1.1B</td><td class="negative">-1.47B</td></tr>
+                <tr><td><strong>Earnings Per Share</strong></td><td>7.46</td><td>3.52</td><td>7.59</td><td>0.10</td><td class="negative">-5.84</td></tr>
+                <tr><td><strong>Quarterly Earnings Growth</strong></td><td class="positive">86.40%</td><td class="positive">59.20%</td><td class="positive">260.90%</td><td class="positive">231.40%</td><td>--</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Profitability Comparison</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>AAPL</th>
+                    <th>NVDA</th>
+                    <th>MU</th>
+                    <th>PLTR</th>
+                    <th>IONQ</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Profit Margin</strong></td><td class="positive">26.92%</td><td class="positive">52.41%</td><td class="positive">22.85%</td><td class="positive">28.11%</td><td>0.00%</td></tr>
+                <tr><td><strong>Operating Margin</strong></td><td class="positive">31.65%</td><td class="positive">60.84%</td><td class="positive">32.64%</td><td class="positive">33.30%</td><td class="negative">-423.45%</td></tr>
+                <tr><td><strong>Return on Assets (ROA)</strong></td><td class="positive">22.96%</td><td class="positive">53.09%</td><td class="positive">8.06%</td><td class="positive">7.65%</td><td class="negative">-11.77%</td></tr>
+                <tr><td><strong>Return on Equity (ROE)</strong></td><td class="positive">171.42%</td><td class="positive">109.42%</td><td class="positive">17.20%</td><td class="positive">19.50%</td><td class="negative">-107.76%</td></tr>
+            </tbody>
+        </table>
+
+        <h2>📝 Analysis Notes</h2>
+        
+        <h3>Key Observations</h3>
+        <div class="insights">
+            <ol>
+                <li><strong>Market Leaders:</strong>
+                    <ul>
+                        <li>NVDA and AAPL dominate with market caps over 3.9T</li>
+                        <li>Both show strong profitability and consistent growth</li>
+                    </ul>
+                </li>
+                <li><strong>Growth Companies:</strong>
+                    <ul>
+                        <li>IONQ shows exceptional revenue growth (221.50%) but is pre-profit</li>
+                        <li>PLTR demonstrates strong growth (62.80%) with improving profitability</li>
+                        <li>MU shows impressive earnings growth (260.90%)</li>
+                    </ul>
+                </li>
+                <li><strong>Valuation Insights:</strong>
+                    <ul>
+                        <li>MU offers best value with Forward P/E of 14.35</li>
+                        <li>PLTR has highest Price/Sales ratio (438.74), indicating premium valuation</li>
+                        <li>NVDA's forward P/E (26.95) suggests reasonable valuation despite high trailing P/E</li>
+                    </ul>
+                </li>
+                <li><strong>Profitability Leaders:</strong>
+                    <ul>
+                        <li>NVDA leads with 52.41% profit margin and 60.84% operating margin</li>
+                        <li>AAPL shows exceptional ROE (171.42%)</li>
+                        <li>All mature companies (AAPL, NVDA, MU, PLTR) show positive profitability</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <div class="footer">
+            <p><strong>Data Source:</strong> Yahoo Finance</p>
+            <p><strong>Extraction Date:</strong> November 19, 2025</p>
+            <p><strong>Original Data:</strong> stock_data_20251119_134901.json</p>
+            <p style="margin-top: 15px;"><em>This report was automatically generated from Yahoo Finance data. All figures are as of the extraction date and may have changed since then.</em></p>
+        </div>
+    </div>
+</body>
+</html>
+
