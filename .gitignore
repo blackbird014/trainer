@@ -1,0 +1,30 @@
+# Output files (generated content)
+output/json/*.json
+output/report/*.md
+output/pdf/*.pdf
+output/html/*.html
+
+# Keep directory structure
+!output/json/.gitkeep
+!output/report/.gitkeep
+!output/pdf/.gitkeep
+!output/html/.gitkeep
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
