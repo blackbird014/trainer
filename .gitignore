@@ -10,10 +10,8 @@ output/html/*.html
 !output/pdf/.gitkeep
 !output/html/.gitkeep
 
-# Allow site directory for GitHub Pages
-!site/
-site/**
-!site/index.html
+# Allow index.html for GitHub Pages
+!index.html
 
 # Editor files
 .vscode/
