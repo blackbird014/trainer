@@ -2,14 +2,15 @@
 
 ## Prompt Template
 
-When provided with a markdown stock analysis report (e.g., `output/report/stock_analysis_report.md`), generate a professional HTML version suitable for GitHub Pages deployment.
+When provided with a markdown stock analysis report from `output/report/` directory (e.g., `output/report/stock_analysis_report.md`), generate a professional HTML version and save it to `output/html/` directory.
 
 ## Instructions
 
-1. **Read the markdown report** file
-2. **Convert to HTML** with professional styling
-3. **Save to** `output/html/stock_analysis_report.html`
-4. **Also create** `index.html` in project root for GitHub Pages
+1. **Read the markdown report** file from `output/report/` directory
+2. **Convert to HTML** with professional styling (matching the existing style)
+3. **Save to** `output/html/[same_filename].html` (e.g., `stock_analysis_report.md` → `stock_analysis_report.html`)
+4. **Add navigation link** at the top: "← Back to Index" linking to `../../index.html`
+5. **Do NOT** create or modify `index.html` in root (that's handled separately)
 
 ## HTML Structure Requirements
 
@@ -30,6 +31,7 @@ Include embedded CSS with:
 - Print-friendly styles
 
 ### 3. Key Features
+- **Navigation:** "← Back to Index" link at the top (links to `../../index.html`)
 - **Tables:** Well-formatted, responsive tables
 - **Color coding:** Positive values in green, negative in red
 - **Company sections:** Distinct sections for each company
@@ -79,16 +81,35 @@ Convert all markdown sections:
     <title>Stock Analysis Report</title>
     <style>
         /* Embedded CSS styles */
+        .back-link {
+            margin-bottom: 20px;
+        }
+        .back-link a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .back-link a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="back-link">
+            <a href="../../index.html">← Back to Index</a>
+        </div>
         <h1>Stock Analysis Report</h1>
         <!-- Content sections -->
     </div>
 </body>
 </html>
 ```
+
+**Important:** The back link uses relative path `../../index.html` because:
+- HTML files are in: `output/html/`
+- Index is in: project root
+- So: `../` (up to output) → `../` (up to root) → `index.html`
 
 ## Usage Example
 
@@ -99,13 +120,20 @@ following the template in prompt/generate_html_report.md
 ```
 
 **Output:**
-- `output/html/stock_analysis_report.html` - Full HTML report
-- `index.html` - Copy in project root for GitHub Pages
+- `output/html/stock_analysis_report.html` - Full HTML report with back link to index
+
+**Note:** The HTML file will be saved in `output/html/` directory. The `index.html` in root should be updated separately using the `generate_index_page.md` prompt to add a link to this new report.
+
+## File Paths
+
+- **Input:** Markdown files in `output/report/*.md`
+- **Output:** HTML files in `output/html/*.html`
+- **Index:** Landing page at `index.html` (root directory)
 
 ## GitHub Pages Setup
 
 After generating HTML:
-1. Ensure `index.html` exists in project root
+1. Ensure `index.html` exists in project root (with links to reports)
 2. Go to repository Settings → Pages
 3. Select source: "Deploy from a branch"
 4. Select branch: `main`
