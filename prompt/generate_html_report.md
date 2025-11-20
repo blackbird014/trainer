@@ -20,15 +20,19 @@ When provided with a markdown stock analysis report from `output/report/` direct
 - Semantic HTML5 elements
 
 ### 2. CSS Styling
-Include embedded CSS with:
-- Modern, clean design
-- Responsive layout (mobile-friendly)
-- Professional color scheme
-- Styled tables with hover effects
-- Color coding for positive/negative values:
-  - Green for positive metrics
-  - Red for negative metrics
-- Print-friendly styles
+**Link to external stylesheet** instead of embedding CSS:
+- Use: `<link rel="stylesheet" href="../../css/report.css">`
+- The CSS file is located at: `css/report.css` (project root)
+- From `output/html/` directory, the relative path is: `../../css/report.css`
+- The shared stylesheet includes:
+  - Modern, clean design
+  - Responsive layout (mobile-friendly)
+  - Professional color scheme
+  - Styled tables with hover effects
+  - Color coding for positive/negative values:
+    - Green for positive metrics
+    - Red for negative metrics
+  - Print-friendly styles
 
 ### 3. Key Features
 - **Navigation:** "← Back to Index" link at the top (links to `../../index.html`)
@@ -79,20 +83,7 @@ Convert all markdown sections:
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Analysis Report</title>
-    <style>
-        /* Embedded CSS styles */
-        .back-link {
-            margin-bottom: 20px;
-        }
-        .back-link a {
-            color: #3498db;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        .back-link a:hover {
-            text-decoration: underline;
-        }
-    </style>
+    <link rel="stylesheet" href="../../css/report.css">
 </head>
 <body>
     <div class="container">
@@ -106,10 +97,10 @@ Convert all markdown sections:
 </html>
 ```
 
-**Important:** The back link uses relative path `../../index.html` because:
-- HTML files are in: `output/html/`
-- Index is in: project root
-- So: `../` (up to output) → `../` (up to root) → `index.html`
+**Important Paths:**
+- **CSS:** `../../css/report.css` (from `output/html/` to `css/report.css`)
+- **Back link:** `../../index.html` (from `output/html/` to root `index.html`)
+- Path breakdown: `../` (up to output) → `../` (up to root) → `css/report.css` or `index.html`
 
 ## Usage Example
 
@@ -128,6 +119,7 @@ following the template in prompt/generate_html_report.md
 
 - **Input:** Markdown files in `output/report/*.md`
 - **Output:** HTML files in `output/html/*.html`
+- **CSS:** Shared stylesheet at `css/report.css` (root directory)
 - **Index:** Landing page at `index.html` (root directory)
 
 ## GitHub Pages Setup
@@ -144,7 +136,9 @@ The site will be available at: `https://[username].github.io/trainer/`
 
 ## Notes
 
-- Keep HTML self-contained (embedded CSS, no external dependencies)
+- **Use external CSS:** Link to `../../css/report.css` instead of embedding styles
+- **Shared stylesheet:** All HTML reports use the same CSS file for consistency
+- **Easy maintenance:** Update CSS once, affects all reports
 - Ensure tables are responsive for mobile devices
 - Use semantic HTML for accessibility
 - Include proper meta tags for SEO
