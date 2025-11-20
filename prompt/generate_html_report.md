@@ -21,9 +21,10 @@ When provided with a markdown stock analysis report from `output/report/` direct
 
 ### 2. CSS Styling
 **Link to external stylesheet** instead of embedding CSS:
-- Use: `<link rel="stylesheet" href="../../css/report.css">`
-- The CSS file is located at: `css/report.css` (project root)
-- From `output/html/` directory, the relative path is: `../../css/report.css`
+- Use: `<link rel="stylesheet" href="../css/report.css">`
+- The CSS file is located at: `output/css/report.css`
+- From `output/html/` directory, the relative path is: `../css/report.css`
+- Both HTML and CSS are in the `output/` directory, so only one level up (`../`)
 - The shared stylesheet includes:
   - Modern, clean design
   - Responsive layout (mobile-friendly)
@@ -83,7 +84,7 @@ Convert all markdown sections:
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Analysis Report</title>
-    <link rel="stylesheet" href="../../css/report.css">
+    <link rel="stylesheet" href="../css/report.css">
 </head>
 <body>
     <div class="container">
@@ -98,28 +99,46 @@ Convert all markdown sections:
 ```
 
 **Important Paths:**
-- **CSS:** `../../css/report.css` (from `output/html/` to `css/report.css`)
+- **CSS:** `../css/report.css` (from `output/html/` to `output/css/report.css`)
 - **Back link:** `../../index.html` (from `output/html/` to root `index.html`)
-- Path breakdown: `../` (up to output) → `../` (up to root) → `css/report.css` or `index.html`
+- Path breakdown:
+  - CSS: `../` (up to output) → `css/report.css`
+  - Index: `../` (up to output) → `../` (up to root) → `index.html`
 
-## Usage Example
+## How to Use This Prompt
 
-**Input:**
+**You must specify which markdown file to convert:**
+
+**Example 1 - Specific file:**
 ```
 Read output/report/stock_analysis_report.md and generate an HTML version 
 following the template in prompt/generate_html_report.md
 ```
 
+**Example 2 - With explicit instruction:**
+```
+Generate HTML from output/report/stock_analysis_report.md using 
+prompt/generate_html_report.md
+```
+
+**Example 3 - Simple:**
+```
+Convert output/report/stock_analysis_report.md to HTML
+```
+
 **Output:**
 - `output/html/stock_analysis_report.html` - Full HTML report with back link to index
 
-**Note:** The HTML file will be saved in `output/html/` directory. The `index.html` in root should be updated separately using the `generate_index_page.md` prompt to add a link to this new report.
+**Note:** 
+- Always specify the markdown file path (e.g., `output/report/stock_analysis_report.md`)
+- The HTML will be saved with the same filename (`.md` → `.html`) in `output/html/`
+- The `index.html` in root should be updated separately using the `generate_index_page.md` prompt to add a link to this new report
 
 ## File Paths
 
 - **Input:** Markdown files in `output/report/*.md`
 - **Output:** HTML files in `output/html/*.html`
-- **CSS:** Shared stylesheet at `css/report.css` (root directory)
+- **CSS:** Shared stylesheet at `output/css/report.css`
 - **Index:** Landing page at `index.html` (root directory)
 
 ## GitHub Pages Setup
@@ -136,7 +155,7 @@ The site will be available at: `https://[username].github.io/trainer/`
 
 ## Notes
 
-- **Use external CSS:** Link to `../../css/report.css` instead of embedding styles
+- **Use external CSS:** Link to `../css/report.css` instead of embedding styles
 - **Shared stylesheet:** All HTML reports use the same CSS file for consistency
 - **Easy maintenance:** Update CSS once, affects all reports
 - Ensure tables are responsive for mobile devices
