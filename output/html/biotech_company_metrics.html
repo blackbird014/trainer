@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biotech Company Metrics Dashboard</title>
+    <link rel="stylesheet" href="../css/report.css">
+</head>
+<body>
+    <div class="container">
+        <div class="back-link">
+            <a href="../../index.html">← Back to Index</a>
+        </div>
+        <h1>Company Metrics Dashboard - Biotech Investment Pipeline</h1>
+        <div class="meta">
+            <strong>Generated:</strong> November 21, 2025<br>
+            <strong>Analysis Date:</strong> November 21, 2025<br>
+            <strong>Companies Analyzed:</strong> Pacific Biosciences (PACB), Ginkgo Bioworks (DNA), Twist Bioscience (TWST), Recursion Pharmaceuticals (RXRX), Moderna (MRNA)<br>
+            <strong>Data Source:</strong> All quantitative financial metrics from <code>stock_data_20251121_122508.json</code> (Yahoo Finance, extracted November 21, 2025)
+        </div>
+
+        <div class="note" style="background: #e8f4f8; border-left-color: #3498db;">
+            <strong>Missing Data Summary:</strong> The following quantitative metrics are NOT available in the JSON file and are marked as estimates: Cash Position, Current Stock Price, 52-Week High/Low, Analyst Rating, Price Target. All other quantitative metrics (Market Cap, Revenue, Growth, Net Income, EBITDA, P/E ratios, Margins, ROE, ROA, Price/Sales, Price/Book, EV metrics) are sourced directly from JSON.
+        </div>
+
+        <h2>Table: Biotech Pipeline Companies</h2>
+        
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>PacBio (PACB)</th>
+                        <th>Ginkgo Bioworks (DNA)</th>
+                        <th>Twist Bioscience (TWST)</th>
+                        <th>Recursion (RXRX)</th>
+                        <th>Moderna (MRNA)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Market Cap</strong></td><td>$532.87M</td><td>$479.27M</td><td>$1.56B</td><td>$2.10B</td><td>$9.45B</td></tr>
+                    <tr><td><strong>Enterprise Value</strong></td><td>$934.29M</td><td>$440.28M</td><td>$1.40B</td><td>$1.52B</td><td>$5.68B</td></tr>
+                    <tr><td><strong>Cash Position</strong></td><td>~$200M (est.)</td><td>~$800M (est.)</td><td>~$400M (est.)</td><td>~$500M (est.)</td><td>~$8.5B (est.)</td></tr>
+                    <tr><td><strong>Cash Burn (Annual)</strong></td><td>~$504M (est.)</td><td>~$340M (est.)</td><td>~$78M (est.)</td><td>~$716M (est.)</td><td>~$3.12B (est.)</td></tr>
+                    <tr><td><strong>Runway (Years)</strong></td><td class="negative">~0.4 years</td><td>~2.4 years</td><td class="positive">~5.1 years</td><td class="negative">~0.7 years</td><td>~2.7 years</td></tr>
+                    <tr><td><strong>Revenue (TTM)</strong></td><td>$154.67M</td><td>$200.56M</td><td>$376.38M</td><td>$60.18M</td><td>$2.22B</td></tr>
+                    <tr><td><strong>Revenue Growth</strong></td><td class="negative">-3.80% (QoQ)</td><td class="negative">-56.40% (QoQ)</td><td class="positive">16.90% (QoQ)</td><td class="negative">-80.20% (QoQ)</td><td class="negative">-45.40% (QoQ)</td></tr>
+                    <tr><td><strong>Gross Profit</strong></td><td>$58.37M</td><td>$131.31M</td><td>$191M</td><td class="negative">-$503.45M</td><td class="negative">-$3.49B</td></tr>
+                    <tr><td><strong>EBITDA</strong></td><td>--</td><td>--</td><td class="negative">-$39.68M</td><td>--</td><td>$1.22B</td></tr>
+                    <tr><td><strong>Net Income</strong></td><td class="negative">-$503.63M</td><td class="negative">-$339.55M</td><td class="negative">-$77.67M</td><td class="negative">-$715.54M</td><td class="negative">-$3.12B</td></tr>
+                    <tr><td><strong>Earnings Per Share</strong></td><td class="negative">-$2.13</td><td class="negative">-$6.18</td><td class="negative">-$1.30</td><td class="negative">-$1.84</td><td class="negative">-$8.06</td></tr>
+                    <tr><td><strong>Profitability</strong></td><td>Pre-profit (Losing money)</td><td>Pre-profit (Losing money)</td><td>Pre-profit (Losing money)</td><td>Pre-profit (Losing money)</td><td>Pre-profit (Losing money)</td></tr>
+                    <tr><td><strong>Profit Margin</strong></td><td>0.00%</td><td class="negative">-188.00%</td><td class="negative">-20.63%</td><td>0.00%</td><td class="negative">-139.61%</td></tr>
+                    <tr><td><strong>Operating Margin</strong></td><td class="negative">-100.94%</td><td class="negative">-227.29%</td><td class="negative">-30.23%</td><td class="negative">-3,327.57%</td><td class="negative">-25.59%</td></tr>
+                    <tr><td><strong>Return on Assets (ROA)</strong></td><td class="negative">-32.23%</td><td class="negative">-15.55%</td><td class="negative">-13.56%</td><td class="negative">-42.20%</td><td class="negative">-15.49%</td></tr>
+                    <tr><td><strong>Return on Equity (ROE)</strong></td><td class="negative">-205.90%</td><td class="negative">-50.02%</td><td class="negative">-16.43%</td><td class="negative">-91.07%</td><td class="negative">-29.32%</td></tr>
+                    <tr><td><strong>P/E Ratio (Trailing)</strong></td><td>N/A (Unprofitable)</td><td>N/A (Unprofitable)</td><td>N/A (Unprofitable)</td><td>N/A (Unprofitable)</td><td>7.06 (Historical - currently unprofitable)</td></tr>
+                    <tr><td><strong>P/E Ratio (Forward)</strong></td><td>N/A</td><td>N/A</td><td>N/A</td><td>N/A</td><td>N/A</td></tr>
+                    <tr><td><strong>Price/Sales</strong></td><td>3.53</td><td>2.39</td><td>4.04</td><td>37.23</td><td>4.26</td></tr>
+                    <tr><td><strong>Price/Book</strong></td><td>14.76</td><td>0.86</td><td>3.29</td><td>2.01</td><td>1.01</td></tr>
+                    <tr><td><strong>EV/Revenue</strong></td><td>6.04</td><td>2.44</td><td>3.72</td><td>35.08</td><td>2.58</td></tr>
+                    <tr><td><strong>EV/EBITDA</strong></td><td>--</td><td>--</td><td class="negative">-35.26</td><td>--</td><td>4.64</td></tr>
+                    <tr><td><strong>Clinical Programs</strong></td><td>N/A (Tools)</td><td>~15-20 active (est.)</td><td>N/A (Tools)</td><td>~5-7 programs (est.)</td><td>~40+ programs (est.)</td></tr>
+                    <tr><td><strong>Key Partnerships</strong></td><td>Pharma, research (est.)</td><td>Pharma, CPG (est.)</td><td>Pharma, research (est.)</td><td>Roche, Bayer (est.)</td><td>Multiple pharma (est.)</td></tr>
+                    <tr><td><strong>Partnership Value</strong></td><td>$100M+ (est.)</td><td>$2B+ (est.)</td><td>$200M+ (est.)</td><td>$1B+ (est.)</td><td>$5B+ (est.)</td></tr>
+                    <tr><td><strong>Technology Validation</strong></td><td>Early Commercial</td><td>Platform Scaling</td><td>Commercial</td><td>Early Clinical</td><td>Validated (COVID)</td></tr>
+                    <tr><td><strong>Regulatory Status</strong></td><td>FDA-cleared tools</td><td>Platform-based</td><td>FDA-cleared tools</td><td>Clinical trials</td><td>Approved products</td></tr>
+                    <tr><td><strong>Competitive Position</strong></td><td>#3 Sequencing</td><td>#1 SynBio Platform</td><td>#1 DNA Synthesis</td><td>Top 3 AI Drug Discovery</td><td>#1 mRNA Platform</td></tr>
+                    <tr><td><strong>Market Share</strong></td><td>~5% sequencing (est.)</td><td>~20% synbio (est.)</td><td>~30% DNA synthesis (est.)</td><td>~5% AI drug discovery (est.)</td><td>~50% mRNA (est.)</td></tr>
+                    <tr><td><strong>Key Risks</strong></td><td>Cash runway, adoption</td><td>Platform economics, execution</td><td>Market size, competition</td><td>Clinical translation, cash burn</td><td>Revenue volatility, competition</td></tr>
+                    <tr><td><strong>Catalysts</strong></td><td>Long-read adoption, partnerships</td><td>Platform deals, revenue growth</td><td>Synthetic biology growth</td><td>Clinical readouts, partnerships</td><td>Pipeline expansion, new indications</td></tr>
+                    <tr><td><strong>Next Milestone</strong></td><td>Revenue growth, partnerships</td><td>Major partnership announcements</td><td>Revenue growth, profitability</td><td>Clinical data readouts</td><td>Pipeline progress, approvals</td></tr>
+                    <tr><td><strong>Target Market</strong></td><td>$10B+ sequencing</td><td>$150-200B+ pipeline TAM</td><td>$5-10B DNA synthesis</td><td>$5-10B AI drug discovery</td><td>$100B+ therapeutics</td></tr>
+                    <tr><td><strong>Current Price</strong></td><td>~$2.50 (est.)</td><td>~$0.85 (est.)</td><td>~$25 (est.)</td><td>~$8.50 (est.)</td><td>~$25 (est.)</td></tr>
+                    <tr><td><strong>52-Week High</strong></td><td>~$8 (est.)</td><td>~$15 (est.)</td><td>~$45 (est.)</td><td>~$15 (est.)</td><td>~$50 (est.)</td></tr>
+                    <tr><td><strong>52-Week Low</strong></td><td>~$1.50 (est.)</td><td>~$0.50 (est.)</td><td>~$15 (est.)</td><td>~$4 (est.)</td><td>~$15 (est.)</td></tr>
+                    <tr><td><strong>Analyst Rating</strong></td><td>Buy/Speculative (est.)</td><td>Hold/Speculative (est.)</td><td>Buy (est.)</td><td>Buy/Speculative (est.)</td><td>Hold (est.)</td></tr>
+                    <tr><td><strong>Price Target</strong></td><td>~$4-6 (est.)</td><td>~$1-2 (est.)</td><td>~$30-35 (est.)</td><td>~$10-12 (est.)</td><td>~$30-35 (est.)</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2>Key Insights from Metrics</h2>
+
+        <div class="company-section">
+            <h3>Cash Runway Leaders</h3>
+            <ul>
+                <li><strong>Twist Bioscience (TWST)</strong>: ~5.1 years runway (estimated from cash position and burn rate). Shows positive revenue growth (16.90%), indicating improving unit economics. Net loss of -$77.67M is the smallest among the group.</li>
+                <li><strong>Moderna (MRNA)</strong>: ~2.7 years runway despite large cash burn (~$3.12B annual loss). Strong cash position (~$8.5B estimated) provides buffer. Currently burning cash post-pandemic revenue normalization.</li>
+                <li><strong>Ginkgo Bioworks (DNA)</strong>: ~2.4 years runway. Despite significant revenue decline (-56.40%), maintains substantial cash reserves. Net loss of -$339.55M.</li>
+            </ul>
+            <div class="note">
+                <strong>Cash Runway Concerns:</strong>
+                <ul>
+                    <li><strong>PacBio (PACB)</strong>: ~0.4 years runway - most urgent need for capital raise or revenue acceleration. Net loss of -$503.63M on revenue of $154.67M indicates severe cash burn relative to revenue.</li>
+                    <li><strong>Recursion (RXRX)</strong>: ~0.7 years runway - high cash burn rate (~$716M annual loss) requires near-term funding or partnership revenue. Extreme negative operating margin (-3,327.57%) indicates heavy R&D investment phase.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="company-section">
+            <h3>Growth Leaders</h3>
+            <ul>
+                <li><strong>Twist Bioscience (TWST)</strong>: 16.90% quarterly revenue growth - only company showing positive growth. Revenue of $376.38M with net loss of -$77.67M indicates path toward profitability. Positioned in DNA synthesis, a critical enabler for synthetic biology platforms.</li>
+                <li><strong>PacBio (PACB)</strong>: -3.80% quarterly revenue decline - relatively modest decline compared to peers, indicating resilience in long-read sequencing market. Revenue of $154.67M.</li>
+            </ul>
+            <div class="note">
+                <strong>Growth Challenges:</strong>
+                <ul>
+                    <li><strong>Recursion (RXRX)</strong>: -80.20% quarterly revenue decline - significant revenue contraction, likely due to partnership timing and R&D focus. Revenue of $60.18M with net loss of -$715.54M.</li>
+                    <li><strong>Ginkgo Bioworks (DNA)</strong>: -56.40% quarterly revenue decline - platform transition period, focusing on larger strategic partnerships. Revenue of $200.56M with net loss of -$339.55M.</li>
+                    <li><strong>Moderna (MRNA)</strong>: -45.40% quarterly revenue decline - expected post-pandemic normalization, transitioning from COVID revenue to broader pipeline. Revenue of $2.22B but net loss of -$3.12B indicates significant cash burn.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="company-section">
+            <h3>Profitability Analysis</h3>
+            <p><strong>All companies are currently unprofitable (pre-profit):</strong></p>
+            <ul>
+                <li><strong>MRNA</strong>: Largest net loss at -$3.12B despite revenue of $2.22B. Profit margin of -139.61% indicates significant cash burn post-pandemic. Trailing P/E of 7.06 is historical (from profitable period) - company is currently losing money.</li>
+                <li><strong>RXRX</strong>: Net loss of -$715.54M on revenue of $60.18M. Extreme operating margin of -3,327.57% indicates heavy R&D investment. Price/Sales ratio of 37.23 reflects high market expectations.</li>
+                <li><strong>PACB</strong>: Net loss of -$503.63M on revenue of $154.67M. Operating margin of -100.94% indicates cash burn exceeds revenue.</li>
+                <li><strong>DNA</strong>: Net loss of -$339.55M on revenue of $200.56M. Profit margin of -188.00% indicates significant cash burn relative to revenue.</li>
+                <li><strong>TWST</strong>: Smallest net loss at -$77.67M on revenue of $376.38M. Profit margin of -20.63% is best among group, indicating path toward profitability.</li>
+            </ul>
+        </div>
+
+        <div class="company-section">
+            <h3>Partnership Leaders</h3>
+            <ul>
+                <li><strong>Moderna (MRNA)</strong>: $5B+ estimated partnership value - multiple pharma partnerships, validated mRNA platform with COVID success. Despite current losses, strong platform validation.</li>
+                <li><strong>Ginkgo Bioworks (DNA)</strong>: $2B+ estimated partnership value - extensive platform partnerships across pharma, CPG, and materials sectors.</li>
+                <li><strong>Recursion (RXRX)</strong>: $1B+ estimated partnership value - major partnerships with Roche and Bayer, validating AI-driven drug discovery approach.</li>
+                <li><strong>Twist Bioscience (TWST)</strong>: $200M+ estimated partnership value - growing partnerships in synthetic biology ecosystem.</li>
+                <li><strong>PacBio (PACB)</strong>: $100M+ estimated partnership value - research-focused partnerships, potential for expansion.</li>
+            </ul>
+        </div>
+
+        <div class="insights">
+            <h3>Risk Assessment</h3>
+            <p><strong>Highest Risk:</strong></p>
+            <ul>
+                <li><strong>PacBio (PACB)</strong>: Critical cash runway (~0.4 years), negative profitability (net loss -$503.63M), modest market share in competitive sequencing market. Requires near-term capital raise or significant revenue acceleration. Operating margin of -100.94% indicates severe cash burn.</li>
+                <li><strong>Recursion (RXRX)</strong>: Extreme cash burn (~$716M annual loss), very short runway (~0.7 years), extreme negative operating margin (-3,327.57%). High Price/Sales ratio (37.23) indicates significant market expectations that must be validated through clinical success. Revenue decline of -80.20% adds to risk.</li>
+            </ul>
+            <p><strong>Moderate Risk:</strong></p>
+            <ul>
+                <li><strong>Ginkgo Bioworks (DNA)</strong>: Significant revenue decline (-56.40%), negative profitability (net loss -$339.55M), but maintains cash reserves (~2.4 years runway) and platform validation. Execution risk on platform economics. Profit margin of -188.00% indicates significant cash burn.</li>
+                <li><strong>Moderna (MRNA)</strong>: Post-pandemic revenue normalization (-45.40% decline), negative profitability (net loss -$3.12B), but strong cash position (~$8.5B) provides buffer. Pipeline execution critical for long-term value. Currently burning cash despite historical profitability.</li>
+            </ul>
+            <p><strong>Lower Risk:</strong></p>
+            <ul>
+                <li><strong>Twist Bioscience (TWST)</strong>: Positive revenue growth (16.90%), smallest net loss (-$77.67M), improving unit economics (profit margin -20.63%), moderate cash burn. Best positioned for path to profitability. Market size and competitive dynamics are primary concerns.</li>
+            </ul>
+        </div>
+
+        <div class="insights">
+            <h3>Investment Opportunity</h3>
+            <p><strong>Most Undervalued:</strong></p>
+            <ul>
+                <li><strong>Ginkgo Bioworks (DNA)</strong>: Price/Book ratio of 0.86 indicates potential undervaluation. Platform validation and extensive partnerships suggest value not reflected in current metrics. However, significant revenue decline (-56.40%) and cash burn (-$339.55M net loss) create execution risk.</li>
+                <li><strong>Moderna (MRNA)</strong>: Trailing P/E of 7.06 suggests potential undervaluation, but this is historical - company is currently losing money (-$3.12B net loss). Strong cash position ($8.5B estimated), validated platform, and broad pipeline provide downside protection. Post-pandemic normalization creates opportunity but execution risk remains.</li>
+            </ul>
+            <p><strong>Most Overvalued:</strong></p>
+            <ul>
+                <li><strong>Recursion (RXRX)</strong>: Price/Sales ratio of 37.23 is extremely high, indicating significant market expectations. Extreme negative operating margin (-3,327.57%) and short cash runway (~0.7 years) create high execution risk. Net loss of -$715.54M on revenue of $60.18M. Valuation depends entirely on clinical validation.</li>
+                <li><strong>PacBio (PACB)</strong>: Price/Book ratio of 14.76 is high relative to financial performance. Short cash runway (~0.4 years) and negative profitability (net loss -$503.63M) create valuation concerns.</li>
+            </ul>
+            <p><strong>Most Volatile:</strong></p>
+            <ul>
+                <li><strong>Recursion (RXRX)</strong>: Extreme metrics (Price/Sales 37.23, operating margin -3,327.57%, revenue decline -80.20%) indicate high volatility. Binary outcome dependent on clinical success. Net loss of -$715.54M.</li>
+                <li><strong>Ginkgo Bioworks (DNA)</strong>: Significant revenue volatility (-56.40% decline), platform transition creates uncertainty. Net loss of -$339.55M.</li>
+                <li><strong>Moderna (MRNA)</strong>: Post-pandemic normalization creates volatility as company transitions from COVID revenue to broader pipeline. Currently burning cash (-$3.12B net loss) despite historical profitability.</li>
+            </ul>
+            <p><strong>Most Stable:</strong></p>
+            <ul>
+                <li><strong>Twist Bioscience (TWST)</strong>: Positive growth trajectory (16.90% revenue growth), smallest net loss (-$77.67M), improving fundamentals (profit margin -20.63%), moderate valuation metrics (Price/Sales 4.04). Best positioned for stability among pre-profit companies.</li>
+            </ul>
+        </div>
+
+        <h2>Biotech Pipeline Context</h2>
+
+        <div class="company-section">
+            <h3>Pipeline Positioning</h3>
+            <p><strong>Sequencing Layer:</strong></p>
+            <ul>
+                <li><strong>PACB</strong>: Long-read sequencing specialist (~5% market share estimated), positioned for growth as long-read adoption increases. Revenue of $154.67M with net loss of -$503.63M.</li>
+            </ul>
+            <p><strong>DNA Synthesis Layer:</strong></p>
+            <ul>
+                <li><strong>TWST</strong>: Leading DNA synthesis provider (~30% market share estimated), critical enabler for downstream synthetic biology platforms. Revenue of $376.38M with net loss of -$77.67M, showing positive growth (16.90%).</li>
+            </ul>
+            <p><strong>AI/Bioinformatics Layer:</strong></p>
+            <ul>
+                <li><strong>RXRX</strong>: AI-driven drug discovery platform (~5% market share estimated), positioned to accelerate drug development timelines. Revenue of $60.18M with net loss of -$715.54M, extreme operating margin of -3,327.57%.</li>
+            </ul>
+            <p><strong>Synthetic Biology Platforms:</strong></p>
+            <ul>
+                <li><strong>DNA</strong>: Leading synthetic biology platform (~20% market share estimated), enables organism engineering across multiple sectors. Revenue of $200.56M with net loss of -$339.55M.</li>
+                <li><strong>MRNA</strong>: Validated mRNA platform (~50% market share estimated), proven therapeutic delivery mechanism. Revenue of $2.22B but net loss of -$3.12B, currently burning cash post-pandemic.</li>
+            </ul>
+        </div>
+
+        <div class="company-section">
+            <h3>Interdependencies</h3>
+            <p>The biotech pipeline is <strong>interdependent</strong>:</p>
+            <ul>
+                <li>Sequencing (PACB) provides foundational data</li>
+                <li>DNA Synthesis (TWST) enables downstream engineering</li>
+                <li>AI/Bioinformatics (RXRX) accelerates design and optimization</li>
+                <li>Synthetic Biology Platforms (DNA, MRNA) enable commercial deployment</li>
+            </ul>
+            <p><strong>Complete Chain:</strong> Sequencing → DNA Synthesis → AI Design → Organism Engineering → Therapeutic Development → Market</p>
+        </div>
+
+        <div class="company-section">
+            <h3>Market Opportunity</h3>
+            <p><strong>Total Addressable Market:</strong> $150-200B+ across the pipeline</p>
+            <ul>
+                <li>Sequencing: ~$10B+</li>
+                <li>DNA Synthesis: ~$5-10B</li>
+                <li>AI Drug Discovery: ~$5-10B</li>
+                <li>Synthetic Biology Platforms: ~$150-200B+ (across pharma, food, materials, agriculture)</li>
+            </ul>
+        </div>
+
+        <div class="company-section">
+            <h3>Economic Environment Impact</h3>
+            <p><strong>Current Favorable Conditions:</strong></p>
+            <ul>
+                <li>Lower interest rates benefit R&D-heavy companies</li>
+                <li>Speculative capital available for platform validation</li>
+                <li>Regulatory momentum supporting innovative approaches</li>
+            </ul>
+            <p><strong>Key Considerations:</strong></p>
+            <ul>
+                <li>Cash runway critical with current funding environment - PACB and RXRX have urgent needs</li>
+                <li>Platform validation essential in speculative market</li>
+                <li>Path to profitability timing crucial for capital allocation - TWST shows best trajectory</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <p>
+                <strong>Financial Data:</strong> Yahoo Finance (extracted November 21, 2025)<br>
+                <strong>Original JSON:</strong> stock_data_20251121_122508.json<br>
+                <strong>All Quantitative Metrics:</strong> Market Cap, Revenue, Revenue Growth, Net Income, EBITDA, P/E ratios, Profit Margins, ROE, ROA, Price/Sales, Price/Book, EV/Revenue, EV/EBITDA - all from JSON<br>
+                <strong>Context:</strong> Biotech Investment Pipeline framework<br>
+                <strong>Analysis Date:</strong> November 21, 2025
+            </p>
+            <p style="margin-top: 15px;">
+                <em>This analysis uses ONLY quantitative financial data from the JSON file. All market capitalization, revenue, growth rates, profitability metrics, and valuation ratios are sourced directly from <code>stock_data_20251121_122508.json</code>. Cash positions, partnerships, clinical programs, and market share estimates are approximations based on public information and industry knowledge. All figures are as of the extraction date and may have changed since then.</em>
+            </p>
+            <p style="margin-top: 15px;">
+                <strong>Note on MRNA P/E Ratio:</strong> MRNA shows a trailing P/E of 7.06 in the JSON, but the company is currently unprofitable with a net loss of -$3.12B. This P/E ratio is historical from a period when the company was profitable (likely during COVID vaccine revenue). The company is currently burning cash and should be considered pre-profit/unprofitable for current analysis purposes.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
