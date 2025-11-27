@@ -7,10 +7,39 @@ When provided with a markdown stock analysis report from `output/report/` direct
 ## Instructions
 
 1. **Read the markdown report** file from `output/report/` directory
-2. **Convert to HTML** with professional styling (matching the existing style)
-3. **Save to** `output/html/[same_filename].html` (e.g., `stock_analysis_report.md` → `stock_analysis_report.html`)
-4. **Add navigation link** at the top: "← Back to Index" linking to `../../index.html`
-5. **Do NOT** create or modify `index.html` in root (that's handled separately)
+2. **Manually convert to HTML** - DO NOT use command-line tools (wc, pandoc, etc.)
+3. **Parse the structure** manually:
+   - Headers (h1, h2, h3, h4)
+   - Tables (convert markdown tables to HTML `<table>` elements)
+   - Lists (ul, ol)
+   - Code blocks (pre, code)
+   - Bold/italic text (strong, em)
+   - Horizontal rules (hr)
+4. **Apply CSS classes** from `report.css`:
+   - Use `.positive` class for positive/good values (green)
+   - Use `.negative` class for negative/bad values (red)
+   - Use `.insights` class for highlighted insights sections
+   - Use `.note` class for important notes
+   - Use `.company-section` for distinct company sections
+5. **Color code values**:
+   - Positive metrics (revenue growth, profit margins, etc.) → class="positive"
+   - Negative metrics (losses, declines, etc.) → class="negative"
+6. **Format tables properly**:
+   - Use `<table>`, `<thead>`, `<tbody>`, `<tr>`, `<th>`, `<td>` elements
+   - Apply proper table structure with headers
+7. **Save to** `output/html/[same_filename].html` (e.g., `stock_analysis_report.md` → `stock_analysis_report.html`)
+8. **Add navigation link** at the top: "← Back to Index" linking to `../../index.html`
+9. **Do NOT** create or modify `index.html` in root (that's handled separately)
+
+## CRITICAL: Manual Conversion Requirements
+
+**DO NOT use command-line tools** (wc, pandoc, grep, etc.) for conversion. You must:
+- Read the entire markdown file
+- Manually parse each section
+- Convert markdown syntax to HTML elements
+- Apply appropriate CSS classes
+- Format tables with proper HTML table structure
+- Add color coding using `.positive` and `.negative` classes
 
 ## HTML Structure Requirements
 
