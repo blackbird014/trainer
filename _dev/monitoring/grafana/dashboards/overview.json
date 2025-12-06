@@ -1,0 +1,505 @@
+{
+  "title": "Trainer Modules Overview",
+  "tags": ["overview", "trainer", "all-modules"],
+  "timezone": "browser",
+  "schemaVersion": 27,
+  "version": 1,
+  "refresh": "5s",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Total Operations Across All Modules",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 0},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "rate(prompt_manager_operations_total[5m])",
+          "legendFormat": "Prompt Manager - {{operation}}",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "rate(llm_provider_requests_total[5m])",
+          "legendFormat": "LLM Provider - {{provider}}",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "rate(data_retriever_operations_total[5m])",
+          "legendFormat": "Data Retriever - {{source}}",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "rate(format_converter_operations_total[5m])",
+          "legendFormat": "Format Converter - {{source_format}}→{{target_format}}",
+          "refId": "D"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Prompt Manager - Operations/sec",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 8},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(rate(prompt_manager_operations_total[5m]))",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Prompt Manager - Total Tokens",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 8},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(prompt_manager_tokens_total)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Prompt Manager - Total Cost",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 8},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(prompt_manager_cost_total)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 4
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Prompt Manager - Cache Hit Ratio",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 8},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "rate(prompt_manager_cache_hits_total[5m]) / (rate(prompt_manager_cache_hits_total[5m]) + rate(prompt_manager_cache_misses_total[5m]))",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Security - Validations/sec",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 12},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(rate(prompt_manager_security_validation_total[5m]))",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Security - Injections Detected",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 12},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(prompt_manager_security_injection_detected_total)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": 0, "color": "green"},
+              {"value": 1, "color": "red"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Security - Rate Limit Hits",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 12},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(prompt_manager_security_rate_limit_hits_total)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": 0, "color": "green"},
+              {"value": 1, "color": "yellow"},
+              {"value": 100, "color": "red"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 9,
+      "title": "LLM Provider - Requests/sec",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 12},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(rate(llm_provider_requests_total[5m]))",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        }
+      }
+    },
+    {
+      "id": 10,
+      "title": "LLM Provider - Total Tokens",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 16},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(llm_provider_tokens_total)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 11,
+      "title": "LLM Provider - Total Cost",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 16},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(llm_provider_cost_total)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 4
+        }
+      }
+    },
+    {
+      "id": 12,
+      "title": "LLM Provider - Error Rate",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 16},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(rate(llm_provider_errors_total[5m])) / sum(rate(llm_provider_requests_total[5m])) * 100",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": 0, "color": "green"},
+              {"value": 1, "color": "yellow"},
+              {"value": 5, "color": "red"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 13,
+      "title": "Total Cost Across All Modules",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 16},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(prompt_manager_cost_total) + sum(llm_provider_cost_total)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 4
+        }
+      }
+    },
+    {
+      "id": 14,
+      "title": "Module Health Status",
+      "type": "table",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 20},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "up{job=~\"prompt-manager|prompt-security|llm-provider|data-retriever|format-converter\"}",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "displayMode": "color-background"
+          },
+          "mappings": [
+            {
+              "options": {
+                "1": {
+                  "text": "UP",
+                  "color": "green"
+                },
+                "0": {
+                  "text": "DOWN",
+                  "color": "red"
+                }
+              },
+              "type": "value"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": 15,
+      "title": "Cost Breakdown by Module",
+      "type": "piechart",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 20},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(prompt_manager_cost_total) or vector(0)",
+          "legendFormat": "Prompt Manager",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(llm_provider_cost_total) or vector(0)",
+          "legendFormat": "LLM Provider",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "title": "Format Converter - Operations/sec",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 28},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(rate(format_converter_operations_total[5m]))",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        }
+      }
+    },
+    {
+      "id": 17,
+      "title": "Format Converter - Success Rate",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 28},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(rate(format_converter_operations_total{status=\"success\"}[5m])) / sum(rate(format_converter_operations_total[5m])) * 100",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      }
+    },
+    {
+      "id": 18,
+      "title": "Data Retriever - Operations/sec",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 28},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(rate(data_retriever_operations_total[5m]))",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        }
+      }
+    },
+    {
+      "id": 19,
+      "title": "Data Retriever - Cache Hit Ratio",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 28},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "rate(data_retriever_cache_hits_total[5m]) / (rate(data_retriever_cache_hits_total[5m]) + rate(data_retriever_cache_misses_total[5m]))",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        }
+      }
+    }
+  ]
+}
+

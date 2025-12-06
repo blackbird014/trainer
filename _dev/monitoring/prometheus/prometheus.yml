@@ -1,0 +1,78 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'trainer-monitoring'
+    environment: 'development'
+
+# Alertmanager configuration (optional)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets: ['alertmanager:9093']
+
+# Load rules once and periodically evaluate them
+# rule_files:
+#   - "alert_rules.yml"
+
+scrape_configs:
+  # Scrape Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Scrape Prompt Manager metrics
+  # Note: Update 'host.docker.internal:8000' to match your Python app's host/port
+  # For Mac/Windows Docker Desktop, use 'host.docker.internal'
+  # For Linux, use '172.17.0.1' or your host IP
+  - job_name: 'prompt-manager'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['host.docker.internal:8000']
+        labels:
+          module: 'prompt-manager'
+          service: 'prompt-manager-api'
+          environment: 'development'
+
+  # Scrape Prompt Security metrics (if exposed)
+  # Uncomment and configure when prompt-security module exposes metrics
+  # - job_name: 'prompt-security'
+  #   scrape_interval: 5s
+  #   static_configs:
+  #     - targets: ['host.docker.internal:8001']
+  #       labels:
+  #         module: 'prompt-security'
+  #         service: 'prompt-security-api'
+  #         environment: 'development'
+
+  # Scrape LLM Provider metrics (if exposed)
+  # Uncomment and configure when llm-provider module exposes metrics
+  # - job_name: 'llm-provider'
+  #   scrape_interval: 5s
+  #   static_configs:
+  #     - targets: ['host.docker.internal:8002']
+  #       labels:
+  #         module: 'llm-provider'
+  #         service: 'llm-provider-api'
+  #         environment: 'development'
+
+  # Scrape Data Retriever metrics
+  - job_name: 'data-retriever'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['host.docker.internal:8003']
+        labels:
+          module: 'data-retriever'
+          service: 'data-retriever-api'
+          environment: 'development'
+
+  # Scrape Format Converter metrics
+  - job_name: 'format-converter'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['host.docker.internal:8004']
+        labels:
+          module: 'format-converter'
+          service: 'format-converter-api'
+          environment: 'development'
+

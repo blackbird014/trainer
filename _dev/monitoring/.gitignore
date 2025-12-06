@@ -1,0 +1,9 @@
+# Grafana data
+grafana-data/
+
+# Prometheus data
+prometheus-data/
+
+# Local overrides
+docker-compose.override.yml
+

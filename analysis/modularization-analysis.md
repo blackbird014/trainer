@@ -474,60 +474,105 @@ data-retriever/
 
 ### Module 4: Format Conversion System (`format-converter`)
 
-**Purpose**: Convert between different output formats (Markdown, HTML, PDF, etc.).
+**Purpose**: Convert between different output formats (Markdown, HTML, PDF, JSON, etc.) with support for structured data and auto-detection.
 
 **Core Responsibilities**:
-- Convert markdown to HTML
-- Convert markdown to PDF
+- Convert markdown to HTML/PDF/LaTeX/DOCX
+- Convert JSON to Markdown (schema-aware)
+- Convert Markdown to JSON (with heuristics)
+- Auto-detect input format (MD vs JSON)
 - Apply templates and styling
 - Support custom CSS/theme injection
 - Handle complex markdown features (tables, code blocks, etc.)
+- Support structured LLM outputs (JSON responses)
 
 **API Design**:
 ```python
 class FormatConverter:
-    def convert(self, source: str, source_format: str, 
-                target_format: str, **options) -> str
+    def convert(self, source: Union[str, Dict[str, Any]], 
+                source_format: str = "auto",  # "markdown", "json", "text", "auto"
+                target_format: str,           # "html", "pdf", "markdown", "json", "latex", "docx"
+                **options) -> Union[str, bytes]
+    
+    def json_to_markdown(self, json_data: Dict[str, Any], 
+                        schema: Optional[Schema] = None,
+                        template: Optional[str] = None) -> str
+    """Convert JSON structure to markdown representation."""
+    
+    def markdown_to_json(self, markdown: str, 
+                        schema: Optional[Schema] = None) -> Dict[str, Any]
+    """Convert markdown to JSON structure (heuristic-based)."""
+    
+    def detect_format(self, content: Union[str, Dict[str, Any]]) -> str
+    """Auto-detect format of input content."""
     
     def apply_template(self, content: str, template_path: str) -> str
     def apply_styles(self, html: str, css_path: str) -> str
+    def extract_json_from_text(self, text: str) -> Optional[Dict[str, Any]]
+    """Extract JSON from text (handles code blocks, etc.)."""
 ```
 
 **Supported Conversions**:
 - Markdown → HTML
 - Markdown → PDF
+- Markdown → JSON (heuristic-based)
+- JSON → Markdown (schema-aware)
+- JSON → HTML/PDF (via Markdown)
 - HTML → PDF
 - Markdown → LaTeX
 - Markdown → DOCX
+- Auto-detection of input format
 
 **Features**:
+- **Auto-Detection**: Automatically detect MD vs JSON input
+- **Schema-Aware Conversion**: Use schemas to guide JSON → MD conversion
+- **Bidirectional Conversion**: MD ↔ JSON round-trip support
+- **Structured Output Support**: Handle LLM JSON responses gracefully
 - **Template Support**: Apply HTML templates
 - **CSS Injection**: Inject stylesheets
 - **Custom Renderers**: Extensible renderer system
 - **Metadata Extraction**: Extract frontmatter/metadata
 - **Asset Handling**: Handle images, fonts, etc.
+- **Error Handling**: Graceful degradation for malformed inputs
 
 **Package Structure**:
 ```
 format-converter/
 ├── src/
 │   ├── format_converter/
-│   │   ├── converter.py
-│   │   ├── markdown_to_html.py
-│   │   ├── markdown_to_pdf.py
-│   │   ├── template_engine.py
-│   │   └── renderers/
+│   │   ├── __init__.py
+│   │   ├── converter.py              # Main converter class
+│   │   ├── detector.py               # Format auto-detection
+│   │   ├── metrics.py                 # Prometheus metrics
+│   │   ├── converters/
+│   │   │   ├── __init__.py
+│   │   │   ├── markdown_to_html.py
+│   │   │   ├── markdown_to_pdf.py
+│   │   │   ├── json_to_markdown.py   # Schema-aware JSON→MD
+│   │   │   ├── markdown_to_json.py   # MD→JSON with heuristics
+│   │   │   └── json_extractor.py     # Extract JSON from text
+│   │   ├── template_engine.py        # Template system
+│   │   └── schemas.py                # Schema definitions for conversion
 │   └── tests/
+├── examples/
+│   ├── basic_usage.py
+│   ├── json_conversion.py
+│   ├── integration_all_modules.py
+│   └── README.md
+├── api_service.py                    # FastAPI service with metrics
 ├── pyproject.toml
 └── README.md
 ```
 
 **Dependencies**:
-- `markdown` or `markdown-it-py`
-- `weasyprint` or `pdfkit` (for PDF)
-- `jinja2` (for templates)
+- `markdown` or `markdown-it-py` - Markdown parsing
+- `weasyprint` - PDF generation (better CSS support than pdfkit)
+- `jinja2` - Template engine
+- `pydantic` (optional) - Schema validation
+- `prometheus-client` - Metrics collection
+- `fastapi` + `uvicorn` - API service
 
-**Reusability**: High - general-purpose format conversion
+**Reusability**: Very High - general-purpose format conversion with structured data support
 
 ---
 
@@ -774,6 +819,130 @@ The testing agent integrates seamlessly with agentic development workflows:
 
 ---
 
+### Module 7: Prompt Security System (`prompt-security`)
+
+**Purpose**: Comprehensive security module for protecting against prompt injection attacks and validating user input in prompt templates.
+
+**Core Responsibilities**:
+- Input validation (length limits, character filtering, type checking)
+- Input sanitization (control character removal, pattern blocking)
+- Prompt injection detection (pattern matching, ML-based classification)
+- Template escaping (safe variable insertion)
+- Security logging and monitoring
+- Risk scoring and threat assessment
+
+**API Design**:
+```python
+class SecurityModule:
+    def validate(self, user_input: Dict[str, Any]) -> Dict[str, Any]
+    def sanitize(self, user_input: Dict[str, Any]) -> Dict[str, Any]
+    def detect_injection(self, text: str) -> DetectionResult
+    def escape(self, text: str, context: str = "template") -> str
+    def validate_prompt(self, prompt: str) -> ValidationResult
+
+class DetectionResult:
+    is_safe: bool
+    confidence: float
+    flags: List[str]
+    risk_score: float
+    recommendations: List[str]
+
+class ValidationResult:
+    is_valid: bool
+    errors: List[str]
+    warnings: List[str]
+    sanitized_input: Dict[str, Any]
+```
+
+**Features**:
+- **Multi-Layer Defense**: Validation → Sanitization → Detection → Escaping
+- **Pattern-Based Detection**: Regex patterns for common injection attempts
+- **ML-Based Classification**: Optional ML classifier for advanced detection (future)
+- **Configurable Security Levels**: Strict, moderate, permissive modes
+- **Template Escaping**: Safe variable insertion with delimiters
+- **Structured Templates**: Support for JSON/XML-based templating
+- **Security Logging**: Comprehensive logging of security events
+- **Rate Limiting**: Optional rate limiting per user/IP
+- **Whitelist/Blacklist**: Configurable allowed/blocked patterns
+
+**Package Structure**:
+```
+prompt-security/
+├── src/
+│   ├── prompt_security/
+│   │   ├── __init__.py
+│   │   ├── validator.py          # Input validation
+│   │   ├── sanitizer.py           # Input sanitization
+│   │   ├── detector.py             # Injection detection
+│   │   ├── escaper.py             # Template escaping
+│   │   ├── classifier.py          # ML-based detection (future)
+│   │   ├── security_result.py     # Result types
+│   │   ├── config.py              # Security configuration
+│   │   └── patterns.py            # Injection patterns database
+│   └── tests/
+├── pyproject.toml
+└── README.md
+```
+
+**Integration Points**:
+- **PromptManager**: Integrated into template filling process
+- **FastAPI Service**: Middleware for request validation
+- **Express App**: Optional client-side validation
+- **Template Engine**: Escaping layer during variable substitution
+- **LLM Provider**: Pre-LLM prompt validation
+
+**Dependencies**: 
+- Pure Python (no external dependencies for core functionality)
+- Optional: `scikit-learn` or `transformers` (for ML-based detection)
+- Optional: `regex` (for advanced pattern matching)
+
+**Reusability**: Very High - can be used in any prompt-based application, not just trainer modules
+
+**Security Features**:
+- **Input Length Limits**: Configurable max length per variable
+- **Character Filtering**: Remove control characters, special sequences
+- **Pattern Blocking**: Block common injection patterns (SYSTEM:, IGNORE, etc.)
+- **Context Isolation**: Ensure user input doesn't override system instructions
+- **Structured Delimiters**: Use XML/JSON tags for safe variable insertion
+- **Validation Pipeline**: Multi-stage validation before template filling
+- **Threat Detection**: Real-time detection of injection attempts
+- **Security Metrics**: Track security events and threats
+
+**Example Usage**:
+```python
+from prompt_security import SecurityModule
+from prompt_manager import PromptManager, PromptTemplate
+
+# Initialize security module
+security = SecurityModule(
+    max_length=1000,
+    strict_mode=True,
+    enable_ml_detection=False  # Future feature
+)
+
+# Use with PromptManager
+manager = PromptManager(security_module=security)
+
+# Template filling with automatic security
+template = PromptTemplate("Hello {name}!")
+filled = manager.fill_template(template, {"name": "World"})  # Automatically validated
+
+# Direct security validation
+result = security.validate({"name": "user input"})
+if result.is_safe:
+    # Use validated input
+    pass
+```
+
+**Future Enhancements**:
+- ML-based injection classifier
+- Context-aware validation
+- Advanced pattern learning
+- Security agent for continuous monitoring
+- Industry-standard security framework compliance
+
+---
+
 ## Integration Architecture
 
 ### Core Application (`trainer-core`)
@@ -782,6 +951,7 @@ The main application that orchestrates all modules:
 
 ```python
 from prompt_manager import PromptManager
+from prompt_security import SecurityModule
 from llm_provider import LLMProvider, OpenAIProvider
 from data_retriever import DataRetriever, YahooFinanceRetriever
 from format_converter import FormatConverter
@@ -789,7 +959,14 @@ from test_agent import TestAgent
 
 class TrainerCore:
     def __init__(self):
-        self.prompt_manager = PromptManager(context_dir="information/context")
+        # Initialize security module
+        self.security = SecurityModule(strict_mode=True)
+        
+        # Initialize prompt manager with security
+        self.prompt_manager = PromptManager(
+            context_dir="information/context",
+            security_module=self.security
+        )
         self.llm_provider = OpenAIProvider()
         self.data_retriever = YahooFinanceRetriever()
         self.format_converter = FormatConverter()
@@ -859,6 +1036,16 @@ test_agent:
   watch_mode: false
   auto_generate_tests: true
   test_framework: "pytest"
+
+prompt_security:
+  enabled: true
+  strict_mode: true
+  max_length: 1000  # Max characters per variable
+  enable_ml_detection: false  # Future feature
+  log_security_events: true
+  rate_limiting:
+    enabled: true
+    requests_per_minute: 60
 ```
 
 ---
@@ -873,7 +1060,20 @@ test_agent:
 5. Update trainer to use new module
 6. **Write tests** for prompt manager functionality
 
-### Phase 2: Extract LLM Provider (Week 3-4)
+### Phase 2: Create Prompt Security Module (Week 3-4)
+1. Create `prompt-security` package
+2. Implement core security components:
+   - Input validator (length, characters, types)
+   - Input sanitizer (control chars, patterns)
+   - Injection detector (pattern matching)
+   - Template escaper (safe variable insertion)
+3. Create security result types and configuration
+4. Integrate with `prompt-manager` module
+5. Add security to FastAPI service middleware
+6. **Write tests** for security functionality
+7. **Document** security best practices and threat model
+
+### Phase 3: Extract LLM Provider (Week 5-6)
 1. Create `llm-provider` package
 2. Implement base abstraction
 3. Add OpenAI provider
@@ -882,21 +1082,21 @@ test_agent:
 6. Update trainer to use new module
 7. **Write tests** for each provider implementation
 
-### Phase 3: Extract Data Retriever (Week 5-6)
+### Phase 4: Extract Data Retriever (Week 7-8)
 1. Create `data-retriever` package
 2. Extract Yahoo Finance logic
 3. Add caching
 4. Update trainer to use new module
 5. **Write tests** for data retrieval and caching
 
-### Phase 4: Extract Format Converter (Week 7-8)
+### Phase 5: Extract Format Converter (Week 9-10)
 1. Create `format-converter` package
 2. Extract HTML conversion logic
 3. Add PDF conversion
 4. Update trainer to use new module
 5. **Write tests** for format conversions
 
-### Phase 5: Create Test Agent (Week 9-10)
+### Phase 6: Create Test Agent (Week 11-12)
 1. Create `test-agent` package
 2. Implement test generation
 3. Implement test runner and coverage
@@ -905,19 +1105,22 @@ test_agent:
 6. Set up CI/CD with automated testing
 7. **Generate initial test suite** for all modules
 
-### Phase 6: Refactor Core Application (Week 11-12)
+### Phase 7: Refactor Core Application (Week 13-14)
 1. Create `trainer-core` package
-2. Integrate all modules
+2. Integrate all modules (including security)
 3. Add CLI interface
 4. Add configuration management
 5. **Run comprehensive test suite** via test-agent
 6. **Achieve target coverage** (80%+)
+7. **Security audit** of integrated system
 
-### Phase 7: Optional Enhancements (Week 13+)
+### Phase 8: Optional Enhancements (Week 15+)
 1. Add training integration module
-2. Add web API (FastAPI)
-3. Add monitoring/logging
+2. Add web API (FastAPI) - already implemented
+3. Add monitoring/logging - already implemented
 4. Enhance CI/CD pipelines with test-agent
+5. **Enhance security module** with ML-based detection
+6. **Security agent** for continuous monitoring
 
 ---
 
@@ -926,6 +1129,7 @@ test_agent:
 ### 1. Reusability
 - Each module can be used independently in other projects
 - Prompt manager can be used for any prompt-based application
+- **Prompt security module can be used in any prompt-based system**
 - LLM provider can be used for any LLM application
 - Format converter is general-purpose
 
@@ -966,6 +1170,7 @@ test_agent:
 ### Publishing
 - Publish to PyPI as separate packages:
   - `trainer-prompt-manager`
+  - `trainer-prompt-security` (security module)
   - `trainer-llm-provider`
   - `trainer-data-retriever`
   - `trainer-format-converter`
@@ -976,10 +1181,18 @@ test_agent:
 ```
 trainer-core
 ├── trainer-prompt-manager
+│   └── trainer-prompt-security (required dependency)
+├── trainer-prompt-security (standalone security module)
 ├── trainer-llm-provider
 ├── trainer-data-retriever
 ├── trainer-format-converter
 └── trainer-test-agent (dev dependency)
+```
+
+**Security Module Dependencies**:
+```
+trainer-prompt-manager
+└── trainer-prompt-security (required for production)
 ```
 
 ### Documentation
@@ -1008,9 +1221,13 @@ trainer-core
 - Retry logic for network operations
 
 ### 4. Security
+- **Prompt Security Module**: Comprehensive protection against prompt injection
 - Secure API key storage
-- Input validation
-- Sanitization of user inputs
+- Input validation and sanitization (via `prompt-security` module)
+- Template escaping and structured templating
+- Injection detection and threat monitoring
+- Security logging and audit trails
+- Rate limiting and abuse prevention
 
 ### 5. Logging
 - Structured logging
@@ -1058,6 +1275,13 @@ The current trainer project has a solid foundation with clear separation between
 4. **Support** multiple LLM providers and data sources
 5. **Create** reusable components for the broader community
 6. **Ensure Quality** through automated testing with the test-agent module
+7. **Protect** against security threats with the prompt-security module
 
-The proposed architecture maintains the simplicity of the current file-based approach while adding the flexibility needed for more advanced use cases. Each module is independently useful and can be developed, tested, and distributed separately. The inclusion of a dedicated test-agent module ensures that testing is not an afterthought but a core part of the development workflow, enabling confident refactoring and safe agentic development practices.
+The proposed architecture maintains the simplicity of the current file-based approach while adding the flexibility needed for more advanced use cases. Each module is independently useful and can be developed, tested, and distributed separately. 
+
+**Key Architectural Decisions**:
+- **Test-Agent Module**: Ensures testing is not an afterthought but a core part of the development workflow, enabling confident refactoring and safe agentic development practices.
+- **Security Module**: Provides comprehensive protection against prompt injection attacks, making security a first-class concern from the start. The security module is designed to be reusable across any prompt-based application, not just the trainer project.
+
+The security module (Phase 2) is prioritized early in the migration strategy to ensure all prompt operations are protected from the beginning, establishing security as a foundational concern rather than an afterthought.
 

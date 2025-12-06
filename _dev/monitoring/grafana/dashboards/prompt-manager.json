@@ -1,0 +1,260 @@
+{
+  "title": "Prompt Manager Dashboard",
+  "tags": ["prompt-manager", "llm", "trainer"],
+  "timezone": "browser",
+  "schemaVersion": 27,
+  "version": 1,
+  "refresh": "5s",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Operations per Second",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "rate(prompt_manager_operations_total[5m])",
+          "legendFormat": "{{operation}} - {{status}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Operation Duration (P95)",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "histogram_quantile(0.95, rate(prompt_manager_operation_duration_seconds_bucket[5m]))",
+          "legendFormat": "{{operation}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Total Tokens",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 8},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(prompt_manager_tokens_total)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Total Cost (USD)",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 8},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(prompt_manager_cost_total)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 4
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Security Validations",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 8},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(prompt_manager_security_validation_total)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Security Injections Detected",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 8},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(prompt_manager_security_injection_detected_total)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": 0, "color": "green"},
+              {"value": 1, "color": "red"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Cache Hit Ratio",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "rate(prompt_manager_cache_hits_total[5m]) / (rate(prompt_manager_cache_hits_total[5m]) + rate(prompt_manager_cache_misses_total[5m]))",
+          "legendFormat": "Hit Ratio",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Cache Hits vs Misses",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "rate(prompt_manager_cache_hits_total[5m])",
+          "legendFormat": "Hits",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "rate(prompt_manager_cache_misses_total[5m])",
+          "legendFormat": "Misses",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        }
+      }
+    },
+    {
+      "id": 9,
+      "title": "Security Validation Rate",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 20},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "rate(prompt_manager_security_validation_total[5m])",
+          "legendFormat": "Validations/sec",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        }
+      }
+    },
+    {
+      "id": 10,
+      "title": "Rate Limit Hits",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 20},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "rate(prompt_manager_security_rate_limit_hits_total[5m])",
+          "legendFormat": "Rate Limit Hits/sec",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": 0, "color": "green"},
+              {"value": 1, "color": "yellow"},
+              {"value": 10, "color": "red"}
+            ]
+          }
+        }
+      }
+    }
+  ]
+}
+
