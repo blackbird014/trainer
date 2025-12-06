@@ -76,3 +76,13 @@ scrape_configs:
           service: 'format-converter-api'
           environment: 'development'
 
+  # Scrape Model Trainer metrics
+  - job_name: 'model-trainer'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['host.docker.internal:8005']
+        labels:
+          module: 'model-trainer'
+          service: 'model-trainer-api'
+          environment: 'development'
+

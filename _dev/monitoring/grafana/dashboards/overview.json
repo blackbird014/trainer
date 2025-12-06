@@ -47,6 +47,15 @@
           "expr": "rate(format_converter_operations_total[5m])",
           "legendFormat": "Format Converter - {{source_format}}→{{target_format}}",
           "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "rate(model_trainer_training_runs_total[5m])",
+          "legendFormat": "Model Trainer - {{framework}}",
+          "refId": "E"
         }
       ],
       "fieldConfig": {
@@ -357,7 +366,7 @@
             "type": "prometheus",
             "uid": "__datasource_uid__"
           },
-          "expr": "up{job=~\"prompt-manager|prompt-security|llm-provider|data-retriever|format-converter\"}",
+          "expr": "up{job=~\"prompt-manager|prompt-security|llm-provider|data-retriever|format-converter|model-trainer\"}",
           "format": "table",
           "instant": true,
           "refId": "A"
@@ -497,6 +506,92 @@
           "unit": "percentunit",
           "min": 0,
           "max": 1
+        }
+      }
+    },
+    {
+      "id": 20,
+      "title": "Model Trainer - Training Runs/sec",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 32},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(rate(model_trainer_training_runs_total[5m]))",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        }
+      }
+    },
+    {
+      "id": 21,
+      "title": "Model Trainer - Success Rate",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 32},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(rate(model_trainer_training_runs_total{status=\"success\"}[5m])) / sum(rate(model_trainer_training_runs_total[5m])) * 100",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      }
+    },
+    {
+      "id": 22,
+      "title": "Model Trainer - Active Runs",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 32},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(model_trainer_active_training_runs)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 23,
+      "title": "Model Trainer - Total Versions",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 32},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(model_trainer_model_versions_total)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
         }
       }
     }
