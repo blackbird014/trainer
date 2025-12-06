@@ -40,9 +40,14 @@ build/
 # Testing
 .pytest_cache/
 .coverage
+coverage.json
 htmlcov/
 .tox/
 .pytest_cache/
+
+# Generated test files (opt-in, review before committing)
+tests/generated/
+tests/integration/generated/
 
 # Editor files
 .vscode/

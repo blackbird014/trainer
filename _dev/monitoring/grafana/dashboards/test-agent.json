@@ -1,0 +1,236 @@
+{
+  "title": "Test Agent Dashboard",
+  "tags": ["test-agent", "testing", "pytest", "coverage"],
+  "timezone": "browser",
+  "schemaVersion": 27,
+  "version": 1,
+  "refresh": "5s",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Test Runs per Second",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "rate(test_agent_test_runs_total[5m])",
+          "legendFormat": "{{module}} - {{status}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Test Duration (P95)",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "histogram_quantile(0.95, rate(test_agent_test_duration_seconds_bucket[5m]))",
+          "legendFormat": "{{module}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Total Test Runs",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 8},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(test_agent_test_runs_total)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Success Rate",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 8},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(rate(test_agent_test_runs_total{status=\"success\"}[5m])) / sum(rate(test_agent_test_runs_total[5m])) * 100",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Tests Passed",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 8},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(test_agent_tests_passed_total)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Tests Failed",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 8},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(test_agent_tests_failed_total)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": 0, "color": "green"},
+              {"value": 1, "color": "red"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Coverage by Module",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "test_agent_coverage_percentage",
+          "legendFormat": "{{module}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Tests Generated",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "rate(test_agent_tests_generated_total[5m])",
+          "legendFormat": "{{module}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        }
+      }
+    },
+    {
+      "id": 9,
+      "title": "Test Runs by Module",
+      "type": "piechart",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 20},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum by (module) (test_agent_test_runs_total)",
+          "legendFormat": "{{module}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Integration Test Runs",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 20},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "rate(test_agent_integration_test_runs_total[5m])",
+          "legendFormat": "{{modules}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        }
+      }
+    }
+  ]
+}
+

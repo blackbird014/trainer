@@ -366,7 +366,7 @@
             "type": "prometheus",
             "uid": "__datasource_uid__"
           },
-          "expr": "up{job=~\"prompt-manager|prompt-security|llm-provider|data-retriever|format-converter|model-trainer\"}",
+          "expr": "up{job=~\"prompt-manager|prompt-security|llm-provider|data-retriever|format-converter|model-trainer|test-agent\"}",
           "format": "table",
           "instant": true,
           "refId": "A"
@@ -592,6 +592,94 @@
       "fieldConfig": {
         "defaults": {
           "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 24,
+      "title": "Test Agent - Test Runs/sec",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 36},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(rate(test_agent_test_runs_total[5m]))",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        }
+      }
+    },
+    {
+      "id": 25,
+      "title": "Test Agent - Success Rate",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 36},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(rate(test_agent_test_runs_total{status=\"success\"}[5m])) / sum(rate(test_agent_test_runs_total[5m])) * 100",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      }
+    },
+    {
+      "id": 26,
+      "title": "Test Agent - Tests Passed",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 36},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "sum(test_agent_tests_passed_total)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 27,
+      "title": "Test Agent - Coverage",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 36},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "avg(test_agent_coverage_percentage)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100
         }
       }
     }

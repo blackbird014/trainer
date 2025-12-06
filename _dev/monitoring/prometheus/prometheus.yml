@@ -86,3 +86,13 @@ scrape_configs:
           service: 'model-trainer-api'
           environment: 'development'
 
+  # Scrape Test Agent metrics
+  - job_name: 'test-agent'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['host.docker.internal:8006']
+        labels:
+          module: 'test-agent'
+          service: 'test-agent-api'
+          environment: 'development'
+
