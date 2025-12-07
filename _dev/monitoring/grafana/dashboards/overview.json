@@ -56,6 +56,15 @@
           "expr": "rate(model_trainer_training_runs_total[5m])",
           "legendFormat": "Model Trainer - {{framework}}",
           "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "__datasource_uid__"
+          },
+          "expr": "rate(data_store_operations_total[5m])",
+          "legendFormat": "Data Store - {{operation}}",
+          "refId": "F"
         }
       ],
       "fieldConfig": {
@@ -366,7 +375,7 @@
             "type": "prometheus",
             "uid": "__datasource_uid__"
           },
-          "expr": "up{job=~\"prompt-manager|prompt-security|llm-provider|data-retriever|format-converter|model-trainer|test-agent\"}",
+          "expr": "up{job=~\"prompt-manager|prompt-security|llm-provider|data-retriever|data-store|format-converter|model-trainer|test-agent\"}",
           "format": "table",
           "instant": true,
           "refId": "A"

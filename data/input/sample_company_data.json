@@ -1,0 +1,20 @@
+{
+  "company": {
+    "name": "Apple Inc.",
+    "symbol": "AAPL",
+    "sector": "Technology",
+    "industry": "Consumer Electronics",
+    "employees": 164000
+  },
+  "financials": {
+    "revenue": 394328000000,
+    "net_income": 99803000000,
+    "total_assets": 352755000000,
+    "total_liabilities": 290437000000
+  },
+  "metadata": {
+    "source": "company_api",
+    "last_updated": "2024-01-01T10:00:00"
+  }
+}
+

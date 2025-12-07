@@ -1,0 +1,11 @@
+{
+  "ticker": "AAPL",
+  "price": 150.25,
+  "volume": 1000000,
+  "market_cap": 2500000000000,
+  "pe_ratio": 28.5,
+  "dividend_yield": 0.5,
+  "timestamp": "2024-01-01T10:00:00",
+  "source": "yahoo_finance"
+}
+

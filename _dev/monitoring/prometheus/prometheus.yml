@@ -96,3 +96,13 @@ scrape_configs:
           service: 'test-agent-api'
           environment: 'development'
 
+  # Scrape Data Store metrics
+  - job_name: 'data-store'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['host.docker.internal:8007']
+        labels:
+          module: 'data-store'
+          service: 'data-store-api'
+          environment: 'development'
+

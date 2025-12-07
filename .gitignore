@@ -67,3 +67,8 @@ Thumbs.db
 *.tmp
 *.temp
 
+# Module-specific output directories
+_dev/*/output/
+_dev/*/data/output/
+data/output/
+
