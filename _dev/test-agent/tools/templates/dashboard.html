@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trainer Project - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.15);
+        }
+        
+        .card h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card .icon {
+            font-size: 1.8em;
+        }
+        
+        .card p {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+        
+        .btn:hover {
+            background: #5568d3;
+        }
+        
+        .btn-secondary {
+            background: #48bb78;
+        }
+        
+        .btn-secondary:hover {
+            background: #38a169;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat {
+            text-align: center;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .module-list {
+            list-style: none;
+        }
+        
+        .module-list li {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f7fafc;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .module-list a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .module-list a:hover {
+            text-decoration: underline;
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .status-running {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Trainer Project Dashboard</h1>
+            <p>Centralized view of all modules, tests, and analytics</p>
+        </div>
+        
+        <div class="grid">
+            <!-- Test Analysis Card -->
+            <div class="card">
+                <h2><span class="icon">📊</span> Test Analysis</h2>
+                <p>View comprehensive test analysis, coverage reports, and missing tests for all modules.</p>
+                {% if test_summary %}
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value">{{ test_summary.modules|length }}</div>
+                        <div class="stat-label">Modules</div>
+                    </div>
+                </div>
+                {% endif %}
+                <a href="/test-analysis" class="btn">View Analysis</a>
+            </div>
+            
+            <!-- Data Store Card -->
+            <div class="card">
+                <h2><span class="icon">📦</span> Data Store</h2>
+                <p>Browse and query data stored in MongoDB. View JSON documents, search, and analyze stored data.</p>
+                <a href="/data-store" class="btn">Browse Data</a>
+            </div>
+            
+            <!-- Format Converter Card -->
+            <div class="card">
+                <h2><span class="icon">🎨</span> Format Converter</h2>
+                <p>View rendered HTML documents stored in the database. Browse formatted outputs from the pipeline.</p>
+                <a href="/format-converter" class="btn">View HTML</a>
+            </div>
+            
+            <!-- Modules Card -->
+            <div class="card">
+                <h2><span class="icon">🔗</span> Module Links</h2>
+                <p>Quick access to all module API services, documentation, and tools.</p>
+                <a href="/modules" class="btn btn-secondary">View Modules</a>
+            </div>
+            
+            <!-- Monitoring Card -->
+            <div class="card">
+                <h2><span class="icon">📈</span> Monitoring</h2>
+                <p>Access Grafana dashboards and Prometheus metrics for all modules.</p>
+                <ul class="module-list" style="margin-top: 15px;">
+                    <li>
+                        <a href="{{ monitoring.grafana }}" target="_blank">Grafana</a>
+                        <span class="status-badge status-running">Available</span>
+                    </li>
+                    <li>
+                        <a href="{{ monitoring.prometheus }}" target="_blank">Prometheus</a>
+                        <span class="status-badge status-running">Available</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Quick Stats Card -->
+            <div class="card">
+                <h2><span class="icon">📋</span> Quick Stats</h2>
+                <p>Overview of project status and module health.</p>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value">{{ modules|length }}</div>
+                        <div class="stat-label">Total Modules</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">{{ module_status|length }}</div>
+                        <div class="stat-label">API Services</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Trainer Project Dashboard</p>
+        </div>
+    </div>
+</body>
+</html>
+

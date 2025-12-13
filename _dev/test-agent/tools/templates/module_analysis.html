@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ module }} - Test Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .back-link {
+            color: #667eea;
+            text-decoration: none;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+        
+        .section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .test-list {
+            list-style: none;
+        }
+        
+        .test-list li {
+            padding: 8px;
+            margin: 5px 0;
+            background: #f7fafc;
+            border-radius: 5px;
+        }
+        
+        .missing-tests {
+            margin-top: 15px;
+        }
+        
+        .missing-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #fed7d7;
+            border-radius: 5px;
+            border-left: 4px solid #e53e3e;
+        }
+        
+        .file-path {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .item-list {
+            margin-left: 20px;
+            color: #666;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .badge-success {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .badge-warning {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="/test-analysis" class="back-link">← Back to Test Analysis</a>
+            <h1>📊 {{ module }} - Detailed Analysis</h1>
+        </div>
+        
+        <!-- Tests Discovered -->
+        <div class="section">
+            <h2>Tests Discovered</h2>
+            <p>Found {{ data.tests_discovered|length }} test files:</p>
+            <ul class="test-list">
+                {% for test_file in data.tests_discovered %}
+                <li>{{ test_file }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        <!-- Test Results -->
+        {% if data.test_results and 'error' not in data.test_results %}
+        <div class="section">
+            <h2>Test Results</h2>
+            <p>
+                Passed: <strong>{{ data.test_results.passed }}</strong> |
+                Failed: <strong>{{ data.test_results.failed }}</strong> |
+                Skipped: <strong>{{ data.test_results.skipped }}</strong> |
+                Errors: <strong>{{ data.test_results.errors }}</strong>
+            </p>
+            <p style="margin-top: 10px; color: #666;">Duration: {{ "%.2f"|format(data.test_results.duration) }}s</p>
+        </div>
+        {% endif %}
+        
+        <!-- Coverage -->
+        {% if data.coverage and 'error' not in data.coverage %}
+        <div class="section">
+            <h2>Coverage</h2>
+            <p>
+                Coverage: <strong>{{ "%.1f"|format(data.coverage.percentage) }}%</strong>
+                <span class="badge {% if data.coverage and data.coverage.percentage >= 80 %}badge-success{% else %}badge-warning{% endif %}">
+                    {{ "%.1f"|format(data.coverage.percentage) }}%
+                </span>
+            </p>
+            <p style="margin-top: 10px; color: #666;">
+                Lines: {{ data.coverage.lines_covered }}/{{ data.coverage.lines_total }}
+            </p>
+        </div>
+        {% endif %}
+        
+        <!-- Missing Tests -->
+        {% if data.missing_tests and 'error' not in data.missing_tests %}
+        <div class="section">
+            <h2>Missing Tests</h2>
+                    {% set total_missing = [] %}
+                    {% for items in data.missing_tests.values() %}
+                        {% if items %}
+                            {% set _ = total_missing.append(items | length) %}
+                        {% endif %}
+                    {% endfor %}
+                    {% set total_missing = total_missing | sum %}
+            <p>Found <strong>{{ total_missing }}</strong> untested items:</p>
+            <div class="missing-tests">
+                {% for file_path, items in data.missing_tests.items() %}
+                {% if items %}
+                <div class="missing-item">
+                    <div class="file-path">{{ file_path }}</div>
+                    <div class="item-list">
+                        {% for item in items[:10] %}
+                        <div>• {{ item }}</div>
+                        {% endfor %}
+                        {% if items|length > 10 %}
+                        <div style="color: #999; font-style: italic;">... and {{ items|length - 10 }} more</div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
+

@@ -74,6 +74,23 @@ coverage = agent.check_coverage(module="prompt-manager")
 print(f"Coverage: {coverage.percentage}%")
 ```
 
+### Comprehensive Analysis
+
+Run analysis for all modules with detailed reports:
+
+```bash
+cd _dev/test-agent
+python examples/comprehensive_analysis.py
+```
+
+This tool:
+- Discovers all modules and their tests
+- Checks for missing tests (coverage-based gap analysis)
+- Runs tests with coverage for each module
+- Generates detailed reports in `reports/coverage-reports/`
+
+See `examples/README.md` for more details.
+
 ### Generate Tests (Optional, Opt-In)
 
 ```python

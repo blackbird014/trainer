@@ -44,6 +44,7 @@ class CoverageAnalyzer:
 
         self.project_root = Path(project_root)
         self.dev_dir = self.project_root / "_dev"
+        self.dev_dir = self.project_root / "_dev"
 
     def check_coverage(
         self,
@@ -68,12 +69,18 @@ class CoverageAnalyzer:
         result = runner.run_tests(module=module, coverage=True)
 
         # Try to read coverage JSON report
-        coverage_file = self.project_root / ".coverage.json"
-        if not coverage_file.exists():
-            # Try module-specific coverage
-            if module:
-                mod_path = self.dev_dir / module
-                coverage_file = mod_path / ".coverage.json"
+        # Coverage file is written in the module directory when running from there
+        coverage_file = None
+        if module:
+            mod_path = self.dev_dir / module
+            # Coverage file is named "coverage.json" (not ".coverage.json")
+            coverage_file = mod_path / "coverage.json"
+        
+        if not coverage_file or not coverage_file.exists():
+            # Try project root
+            coverage_file = self.project_root / "coverage.json"
+            if not coverage_file.exists():
+                coverage_file = self.project_root / ".coverage.json"
 
         if coverage_file.exists():
             try:

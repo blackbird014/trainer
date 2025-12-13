@@ -1,0 +1,32 @@
+# Coverage reports
+reports/
+*.coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Build artifacts
+*.egg-info/
+dist/
+build/
+*.egg
+*.whl
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+

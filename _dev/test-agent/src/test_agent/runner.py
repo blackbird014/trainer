@@ -73,16 +73,23 @@ class TestRunner:
             cmd.append("-v")
 
         if coverage:
-            cmd.extend(["--cov", "--cov-report=json", "--cov-report=term"])
+            # Specify source directory for coverage
+            if module:
+                cmd.extend(["--cov=src", "--cov-report=json", "--cov-report=term"])
+            else:
+                cmd.extend(["--cov", "--cov-report=json", "--cov-report=term"])
 
-        # Determine test path
+        # Determine test path and working directory
+        working_dir = self.project_root
         if test_path:
             cmd.append(test_path)
         elif module:
             mod_path = self.dev_dir / module
             tests_dir = mod_path / "tests"
             if tests_dir.exists():
-                cmd.append(str(tests_dir))
+                # Run from module directory for proper coverage
+                working_dir = mod_path.resolve()  # Use absolute path
+                cmd.append("tests/")
             else:
                 return TestResults(
                     passed=0,
@@ -96,6 +103,7 @@ class TestRunner:
         else:
             # Run all tests in _dev
             cmd.append(str(self.dev_dir))
+            working_dir = self.dev_dir.resolve()
 
         # Add any additional kwargs as pytest args
         for key, value in kwargs.items():
@@ -108,7 +116,7 @@ class TestRunner:
         try:
             result = subprocess.run(
                 cmd,
-                cwd=self.project_root,
+                cwd=str(working_dir),  # Convert Path to string for subprocess
                 capture_output=True,
                 text=True,
                 timeout=300  # 5 minute timeout
@@ -116,10 +124,33 @@ class TestRunner:
 
             # Parse output (basic parsing)
             output = result.stdout + result.stderr
+            
+            # Parse test results - try multiple methods
+            import re
+            
+            # Method 1: Count " PASSED", " FAILED", etc. (pytest verbose format)
             passed = output.count(" PASSED")
             failed = output.count(" FAILED")
             skipped = output.count(" SKIPPED")
             errors = output.count(" ERROR")
+            
+            # Method 2: Parse from summary line (e.g., "34 passed in 2.56s")
+            if passed == 0 and failed == 0 and skipped == 0:
+                passed_match = re.search(r'(\d+)\s+passed', output, re.IGNORECASE)
+                failed_match = re.search(r'(\d+)\s+failed', output, re.IGNORECASE)
+                skipped_match = re.search(r'(\d+)\s+skipped', output, re.IGNORECASE)
+                if passed_match:
+                    passed = int(passed_match.group(1))
+                if failed_match:
+                    failed = int(failed_match.group(1))
+                if skipped_match:
+                    skipped = int(skipped_match.group(1))
+            
+            # Method 3: Parse from pytest's final summary
+            # Look for lines like "=== 34 passed in 2.56s ==="
+            summary_match = re.search(r'===?\s*(\d+)\s+passed', output, re.IGNORECASE)
+            if summary_match and passed == 0:
+                passed = int(summary_match.group(1))
 
             # Try to extract duration
             duration = 0.0

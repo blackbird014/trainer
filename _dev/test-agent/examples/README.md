@@ -19,6 +19,27 @@ This directory contains example scripts demonstrating various features of the te
   - Generating contract tests
   - Smart generation from docstrings/type hints
 
+## Comprehensive Analysis
+
+- **`comprehensive_analysis.py`**: Complete test analysis tool for all modules:
+  - Discovers all modules and their tests
+  - Checks for missing tests (coverage-based gap analysis)
+  - Runs tests with coverage for each module
+  - Generates detailed coverage reports organized by module
+  - Outputs reports to `reports/coverage-reports/`
+
+**Usage:**
+```bash
+cd _dev/test-agent
+python examples/comprehensive_analysis.py
+```
+
+**Output:**
+- JSON reports per module with detailed analysis
+- Text summaries for quick review
+- HTML coverage reports (if available)
+- Overall summary across all modules
+
 ## CI/CD Integration
 
 - **`ci_cd_integration.md`**: Comprehensive guide for integrating test-agent into CI/CD pipelines, specifically GitHub Actions.
@@ -54,6 +75,30 @@ Then in another terminal:
 cd _dev/test-agent
 python3 examples/api_usage_demo.py
 ```
+
+### Comprehensive Analysis
+
+Run analysis for all modules:
+
+```bash
+cd _dev/test-agent
+python3 examples/comprehensive_analysis.py
+```
+
+Reports are saved to `reports/coverage-reports/` directory.
+
+### Dashboard
+
+Start the web dashboard:
+
+```bash
+cd _dev/test-agent
+python tools/dashboard.py
+```
+
+Access at: http://localhost:8889/
+
+See `tools/README.md` for details.
 
 ## Generated Tests
 

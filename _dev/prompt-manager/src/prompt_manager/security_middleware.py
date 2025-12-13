@@ -7,11 +7,14 @@ Middleware for validating requests, detecting prompt injections, and logging sec
 import logging
 import time
 import uuid
-from typing import Callable, Dict, Any, Optional, Tuple
+from typing import Callable, Dict, Any, Optional, Tuple, TYPE_CHECKING
 from fastapi import Request, HTTPException, status
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
+
+if TYPE_CHECKING:
+    from prompt_security import SecurityModule, ValidationError, InjectionDetectedError
 
 try:
     from prometheus_client import Counter, Histogram
@@ -24,6 +27,9 @@ try:
     SECURITY_MODULE_AVAILABLE = True
 except ImportError:
     SECURITY_MODULE_AVAILABLE = False
+    SecurityModule = None  # Type stub for type hints
+    ValidationError = Exception  # Fallback
+    InjectionDetectedError = Exception  # Fallback
 
 
 # Setup logger

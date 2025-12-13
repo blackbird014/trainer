@@ -24,6 +24,7 @@ from data_store import create_store, DataStore
 from data_store.models import StoredData, QueryResult, LoadResult
 from data_store.config import StoreConfig
 from data_store.metrics import MetricsCollector
+from data_store.utils.company_generator import generate_batch
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -69,6 +70,12 @@ class QueryRequest(BaseModel):
 
 class BulkStoreRequest(BaseModel):
     items: List[Dict[str, Any]]
+
+
+class SeedCompaniesRequest(BaseModel):
+    """Request model for seeding companies."""
+    count: int = 100
+    collection: str = "seed_companies"
 
 
 # Routes
@@ -328,6 +335,72 @@ async def bulk_store_data(request: BulkStoreRequest):
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         metrics_collector.decrement_active_operations("bulk_store")
+
+
+@app.post("/admin/seed-companies")
+async def seed_companies(request: SeedCompaniesRequest):
+    """
+    Admin endpoint to seed fake companies into a specific collection.
+    
+    Generates fake company data and stores it in the specified MongoDB collection.
+    Can be called multiple times to add more companies.
+    
+    Args:
+        request: SeedCompaniesRequest with count and collection name
+        
+    Returns:
+        Result with number of companies stored
+    """
+    start_time = time.time()
+    metrics_collector.increment_active_operations("seed_companies")
+    
+    try:
+        # Generate fake companies
+        companies = generate_batch(request.count)
+        
+        # Create a store instance for the specified collection
+        collection_store = create_store(
+            config.backend,
+            **{**config.config, "collection": request.collection}
+        )
+        
+        # Prepare items for bulk_store
+        items = [
+            {
+                "key": company["key"],
+                "data": company["data"],
+                "metadata": company["metadata"]
+            }
+            for company in companies
+        ]
+        
+        # Bulk store
+        result = collection_store.bulk_store(items)
+        
+        duration = time.time() - start_time
+        metrics_collector.track_operation("seed_companies", "success" if result.success else "error")
+        metrics_collector.track_duration("seed_companies", duration)
+        
+        # Get total count in collection
+        total_count = collection_store.count({})
+        
+        return {
+            "success": result.success,
+            "records_loaded": result.records_loaded,
+            "total_in_collection": total_count,
+            "collection": request.collection,
+            "errors": result.errors,
+            "keys": result.keys[:10]  # Return first 10 keys as sample
+        }
+        
+    except Exception as e:
+        duration = time.time() - start_time
+        metrics_collector.track_operation("seed_companies", "error")
+        metrics_collector.track_error("seed_companies", type(e).__name__)
+        metrics_collector.track_duration("seed_companies", duration)
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        metrics_collector.decrement_active_operations("seed_companies")
 
 
 @app.post("/count")
