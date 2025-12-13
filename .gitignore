@@ -72,6 +72,17 @@ _dev/*/output/
 _dev/*/data/output/
 data/output/
 
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment files (per-module .env files)
+_dev/*/.env
+.env
+.env.local
+.env.*.local
+
 # Node.js / npm
 node_modules/
 npm-debug.log*

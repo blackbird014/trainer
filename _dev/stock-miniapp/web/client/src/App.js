@@ -12,6 +12,10 @@ function App() {
     setError(null);
     setResult(null);
 
+    // Create timeout controller
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
+
     try {
       const response = await fetch('/api/admin/seed-companies', {
         method: 'POST',
@@ -22,7 +26,10 @@ function App() {
           count: count,
           collection: 'seed_companies'
         }),
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -32,8 +39,13 @@ function App() {
       const data = await response.json();
       setResult(data);
     } catch (err) {
-      setError(err.message);
+      if (err.name === 'AbortError') {
+        setError('Request timed out. The operation may still be processing. Please check MongoDB or try again with a smaller count.');
+      } else {
+        setError(err.message || 'Failed to seed companies');
+      }
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
     }
   };

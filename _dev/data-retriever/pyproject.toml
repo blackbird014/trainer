@@ -50,6 +50,9 @@ database = [
 sec = [
     "sec-edgar-downloader>=4.0.0",
 ]
+yahoo = [
+    "yfinance>=0.2.0",
+]
 all = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
@@ -60,6 +63,7 @@ all = [
     "playwright>=1.40.0",
     "sqlalchemy>=2.0.0",
     "sec-edgar-downloader>=4.0.0",
+    "yfinance>=0.2.0",
 ]
 
 [tool.setuptools.packages.find]

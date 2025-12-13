@@ -384,14 +384,19 @@ async def seed_companies(request: SeedCompaniesRequest):
         # Get total count in collection
         total_count = collection_store.count({})
         
-        return {
+        response_data = {
             "success": result.success,
             "records_loaded": result.records_loaded,
             "total_in_collection": total_count,
             "collection": request.collection,
-            "errors": result.errors,
-            "keys": result.keys[:10]  # Return first 10 keys as sample
+            "errors": result.errors if result.errors else [],
+            "keys": result.keys[:10] if result.keys else []  # Return first 10 keys as sample
         }
+        
+        # Log response for debugging
+        print(f"[seed_companies] Returning response: {result.records_loaded} records, {total_count} total")
+        
+        return response_data
         
     except Exception as e:
         duration = time.time() - start_time
