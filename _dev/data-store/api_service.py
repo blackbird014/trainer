@@ -7,12 +7,23 @@ Run on port 8007 (configurable).
 
 import os
 import time
+from pathlib import Path
 from datetime import datetime
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import PlainTextResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
+
+# Load .env from module directory
+try:
+    from dotenv import load_dotenv
+    module_dir = Path(__file__).parent
+    env_file = module_dir / ".env"
+    load_dotenv(env_file)
+except ImportError:
+    # python-dotenv not installed, skip .env loading
+    pass
 
 try:
     from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
@@ -54,6 +65,7 @@ class StoreRequest(BaseModel):
     data: Any
     metadata: Optional[Dict[str, Any]] = None
     ttl: Optional[int] = None
+    collection: Optional[str] = None  # Optional collection override
 
 
 class UpdateRequest(BaseModel):
@@ -66,10 +78,12 @@ class QueryRequest(BaseModel):
     limit: Optional[int] = None
     sort: Optional[Dict[str, int]] = None
     offset: int = 0
+    collection: Optional[str] = None  # Optional collection override
 
 
 class BulkStoreRequest(BaseModel):
     items: List[Dict[str, Any]]
+    collection: Optional[str] = None  # Optional collection override
 
 
 class SeedCompaniesRequest(BaseModel):
@@ -96,6 +110,7 @@ async def root():
             "bulk_store": "/bulk_store",
             "count": "/count",
             "distinct": "/distinct/{field}",
+            "collections": "/collections",
             "metrics": "/metrics",
             "health": "/health",
         }
@@ -118,6 +133,33 @@ async def health():
         )
 
 
+@app.get("/collections")
+async def list_collections():
+    """List all collections in the database (MongoDB only)."""
+    try:
+        if config.backend != "mongodb":
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Collections endpoint is only available for MongoDB backend"}
+            )
+        
+        # Access MongoDB database directly to list collections
+        if hasattr(store, 'db'):
+            # MongoDBStore has db attribute
+            collection_names = store.db.list_collection_names()
+            return {"collections": sorted(collection_names)}
+        else:
+            return JSONResponse(
+                status_code=500,
+                content={"error": "Unable to access database connection"}
+            )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"Failed to list collections: {str(e)}"}
+        )
+
+
 @app.post("/store")
 async def store_data(request: StoreRequest):
     """Store data."""
@@ -125,7 +167,16 @@ async def store_data(request: StoreRequest):
     metrics_collector.increment_active_operations("store")
     
     try:
-        key = store.store(
+        # If collection is specified, create a store instance for that collection
+        target_store = store
+        if request.collection:
+            from data_store import create_store
+            target_store = create_store(
+                config.backend,
+                **{**config.config, "collection": request.collection}
+            )
+        
+        key = target_store.store(
             key=request.key,
             data=request.data,
             metadata=request.metadata,
@@ -280,7 +331,16 @@ async def query_data(request: QueryRequest):
     metrics_collector.increment_active_operations("query")
     
     try:
-        result = store.query(
+        # Use collection-specific store if collection is specified
+        query_store = store
+        if request.collection:
+            from data_store import create_store
+            query_store = create_store(
+                config.backend,
+                **{**config.config, "collection": request.collection}
+            )
+        
+        result = query_store.query(
             filters=request.filters,
             limit=request.limit,
             sort=request.sort,
@@ -315,7 +375,16 @@ async def bulk_store_data(request: BulkStoreRequest):
     metrics_collector.increment_active_operations("bulk_store")
     
     try:
-        result = store.bulk_store(request.items)
+        # Use collection-specific store if collection is specified
+        store_instance = store
+        if request.collection:
+            from data_store import create_store
+            store_instance = create_store(
+                config.backend,
+                **{**config.config, "collection": request.collection}
+            )
+        
+        result = store_instance.bulk_store(request.items)
         
         duration = time.time() - start_time
         metrics_collector.track_operation("bulk_store", "success" if result.success else "error")
