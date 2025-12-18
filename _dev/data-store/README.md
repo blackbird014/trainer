@@ -211,10 +211,28 @@ print(f"Loaded {result.records_loaded} items")
 
 ## FastAPI Service
 
-Run the API service:
+### Recommended: Using run_api.sh (Automatic venv)
 
 ```bash
 cd _dev/data-store
+./run_api.sh
+```
+
+This script automatically:
+- Activates `venv` or `.venv` if present (no manual activation needed)
+- Shows backend configuration (MongoDB, SQLite, etc.)
+- Starts the API service
+
+### Alternative: Direct Python
+
+```bash
+cd _dev/data-store
+python api_service.py
+```
+
+**Note**: If you have a `venv` in the module directory, activate it first:
+```bash
+source venv/bin/activate  # or source .venv/bin/activate
 python api_service.py
 ```
 

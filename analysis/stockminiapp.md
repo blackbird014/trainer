@@ -9,11 +9,121 @@ Draft a usage demo (mini‑app spec) that reuses existing modules (data-store, d
 3) Web UI flow to run a prompt-driven analysis for a ticker (uses prompt-manager + prompt-security + llm-provider **mock only for first iteration; design stays pluggable to later point to Bedrock or other backends**). Persist prompt + response to MongoDB; render HTML via format-converter; keep MD/JSON variants.  
 4) Optional periodic job to materialize MD/HTML/JSON versions (no LLM) for already stored prompt responses using format-converter utilities.
 
-## Architecture (proposed)
+## Architecture Overview
+
+### High-Level Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        STOCK MINI-APP                                │
+│                                                                      │
+│  ┌──────────────────────────────────────────────────────────────┐ │
+│  │  Frontend (React + Express)                                   │ │
+│  │  - Admin Panel: Seed Companies, Scrape Tickers                │ │
+│  │  - Company Table: Display last 10, "Analyze" button per row   │ │
+│  │  - Prompt Results: Display HTML/MD/JSON output                │ │
+│  └──────────────────────────────────────────────────────────────┘ │
+│                              │                                       │
+│                              │ REST API                              │
+│                              ▼                                       │
+│  ┌──────────────────────────────────────────────────────────────┐ │
+│  │  Orchestrator Service (FastAPI)                               │ │
+│  │  - Coordinates microservice calls                             │ │
+│  │  - Manages workflow state                                     │ │
+│  │  - Handles errors and retries                                 │ │
+│  └──────────────────────────────────────────────────────────────┘ │
+│                              │                                       │
+│        ┌────────────────────┼────────────────────┐                  │
+│        │                      │                    │                  │
+│        ▼                      ▼                    ▼                  │
+│  ┌──────────┐         ┌──────────┐         ┌──────────┐          │
+│  │ data-    │         │ prompt-  │         │ llm-     │          │
+│  │ retriever│         │ manager  │         │ provider  │          │
+│  │ :8003    │         │ :8000    │         │ :8001     │          │
+│  └──────────┘         └──────────┘         └──────────┘          │
+│        │                      │                    │                  │
+│        │                      ▼                    │                  │
+│        │              ┌──────────┐                 │                  │
+│        │              │ prompt-  │                 │                  │
+│        │              │ security │                 │                  │
+│        │              │ :8002    │                 │                  │
+│        │              └──────────┘                 │                  │
+│        │                      │                    │                  │
+│        └──────────────────────┼────────────────────┘                  │
+│                               │                                      │
+│                               ▼                                      │
+│  ┌──────────────────────────────────────────────────────────────┐ │
+│  │  data-store (FastAPI)                                        │ │
+│  │  - MongoDB backend                                            │ │
+│  │  - Collections: seed_companies, prompt_runs                   │ │
+│  │  :8007                                                        │ │
+│  └──────────────────────────────────────────────────────────────┘ │
+│                               │                                      │
+│                               ▼                                      │
+│  ┌──────────────────────────────────────────────────────────────┐ │
+│  │  format-converter (FastAPI)                                   │ │
+│  │  - MD → HTML/JSON conversion                                  │ │
+│  │  :8004                                                        │ │
+│  └──────────────────────────────────────────────────────────────┘ │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+                    ┌──────────────────┐
+                    │   MongoDB        │
+                    │   (Docker)       │
+                    │   :27017         │
+                    │                  │
+                    │ Collections:     │
+                    │ - seed_companies │
+                    │ - prompt_runs    │
+                    └──────────────────┘
+```
+
+### Microservices Architecture
+
+Each module runs as an independent FastAPI service:
+
+- **data-retriever** (Port 8003): Retrieves data from Yahoo Finance
+- **data-store** (Port 8007): Persists data to MongoDB
+- **prompt-manager** (Port 8000): Manages prompt templates and context
+- **prompt-security** (Port 8002): Validates and sanitizes prompts (optional)
+- **llm-provider** (Port 8001): Generates LLM responses (mock or real)
+- **format-converter** (Port 8004): Converts between formats (MD/HTML/JSON)
+- **stock-miniapp orchestrator** (Port 3001/api): Coordinates workflow
+
+### Data Flow
+
+**Flow A: Seed Companies**
+```
+UI → data-store /bulk_store → MongoDB (seed_companies)
+```
+
+**Flow B: Scrape Yahoo Finance**
+```
+UI → data-retriever /retrieve → yfinance API
+UI → data-store /bulk_store → MongoDB (seed_companies)
+UI → data-store /query → Display in table
+```
+
+**Flow C: Prompt Flow (Orchestrated)**
+```
+UI → orchestrator /prompt/run
+  → data-store (get company data)
+  → prompt-manager (load contexts, fill template)
+  → prompt-security (validate)
+  → llm-provider (generate response)
+  → data-store (store prompt + response)
+  → format-converter (render HTML/MD/JSON)
+  → data-store (update with formats)
+  → UI (display result)
+```
+
+## Architecture (Detailed)
 - MongoDB: Local dev via Docker image (reuse existing patterns from data-store examples).  
 - Data layer: data-store module with Mongo backend.  
 - Admin seeding: Conceptual trigger (could be a script or UI button) that inserts via data-store; no new FastAPI admin endpoints to build in this project.  
-- Scraper: Use the existing data-retriever service and its `YahooFinanceRetriever` REST API. The mini-app UI will call the data-retriever API; no new scraper endpoints elsewhere. If external fetch is unavailable, use the retriever’s mock path to emit shaped data.  
+- Scraper: Use the existing data-retriever service and its `YahooFinanceRetriever` REST API. The mini-app UI will call the data-retriever API; no new scraper endpoints elsewhere. If external fetch is unavailable, use the retriever's mock path to emit shaped data.  
 - Prompt flow service: FastAPI endpoint that accepts a ticker, builds a prompt template via prompt-manager, validates/sanitizes via prompt-security, calls llm-provider **in mock mode for v1; architecture remains pluggable to swap in Bedrock/other providers later**, stores prompt+response in Mongo, and invokes format-converter to produce HTML/MD/JSON renderings.  
 - UI: Minimal web pages (could be simple React or server-rendered) for:
   - Admin: trigger fake-company seeding; trigger scrape for tickers.
@@ -830,10 +940,1222 @@ print(example)
 - Table view displays ticker + 4 meaningful fields (Market Cap, Revenue, Profit Margin, P/E Ratio)
 - Shows last 10 results (or less if fewer tickers)
 - Same table view used for both seed companies and scraped data  
-### Step 5: Prompt flow v1 (mock LLM): prompt-manager + prompt-security + llm-provider mock; persist to data-store; render via format-converter; minimal UI page to run and view HTML.  
-### Step 6: Optional periodic job: regenerate MD/HTML/JSON from stored prompt responses (format-converter) and persist.  
-### Step 7: Hardening & metrics: ensure Prometheus metrics exposed from involved services; basic dashboards optional.  
-### Step 8: Later (not in first iteration): swap llm-provider mock to Bedrock by configuration only; no flow changes.  
+### Step 5: Prompt Flow v1 (Mock LLM) - Orchestrator Pattern
+
+#### Overview
+Implement the prompt-driven analysis flow for tickers, starting from the existing admin panel. Users can trigger prompt analysis directly from the company table by clicking a button on each row. This step introduces the **orchestrator pattern** to coordinate multiple microservices (prompt-manager, prompt-security, llm-provider, data-store, format-converter) into a cohesive workflow.
+
+#### Current State
+- ✅ Admin panel exists with company table showing last 10 companies
+- ✅ Table displays: Ticker, Retrieved, Market Cap, Revenue, Profit Margin, P/E Ratio
+- ✅ Companies are stored in MongoDB `seed_companies` collection
+- ✅ UI can query and display companies from data-store
+
+#### Updated Flow C (Starting from Admin Panel)
+
+**Initial Implementation (v1):**
+- **Entry Point**: Admin panel "Last 10 Companies" table
+- **Trigger**: "Analyze" button on each row
+- **Postponed**: UI autocomplete/search (will be added in future iteration)
+
+**REST API Call Chain:**
+```
+UI (Admin Panel) 
+  → Click "Analyze" button on row (ticker: "AAPL")
+  → POST stock-miniapp orchestrator /prompt/run (port 3001)
+    → Orchestrator coordinates:
+      1. GET data-store /retrieve/{key} (port 8007) - Fetch company data
+      2. POST prompt-manager /prompt/load-contexts (port 8000) - Load context files
+      3. POST prompt-manager /prompt/fill (port 8000) - Fill template with ticker + company data
+      4. POST prompt-security /validate (if available) - Sanitize prompt
+      5. POST llm-provider /generate (port 8001) - Generate response (MOCK mode)
+      6. POST data-store /store (port 8007) - Store prompt + response in `prompt_runs` collection
+      7. POST format-converter /convert (port 8004) - Render HTML/MD/JSON
+      8. POST data-store /update/{key} (port 8007) - Update prompt_runs with rendered formats
+    → Return: {run_id, ticker, html_url, status}
+  → UI displays HTML result in modal/new page
+```
+
+#### Architecture Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         STOCK MINI-APP UI                               │
+│                    (React - Port 3001)                                  │
+│                                                                          │
+│  ┌────────────────────────────────────────────────────────────────┐   │
+│  │  Admin Panel - "Last 10 Companies" Table                       │   │
+│  │  ┌──────────┬──────────┬──────────┬──────────┬──────────┐     │   │
+│  │  │ Ticker   │ Market   │ Revenue  │ Profit   │ P/E      │     │   │
+│  │  │          │ Cap      │          │ Margin   │ Ratio    │     │   │
+│  │  ├──────────┼──────────┼──────────┼──────────┼──────────┤     │   │
+│  │  │ AAPL     │ 4.13T    │ 416.16B  │ 25.31%   │ 28.45    │ [A] │   │
+│  │  │ MSFT     │ 3.56T    │ 293.81B  │ 35.12%   │ 32.10    │ [A] │   │
+│  │  │ NVDA     │ 4.26T    │ 187.14B  │ 53.01%   │ 43.32    │ [A] │   │
+│  │  └──────────┴──────────┴──────────┴──────────┴──────────┘     │   │
+│  │                    [A] = "Analyze" Button                        │   │
+│  └────────────────────────────────────────────────────────────────┘   │
+│                                                                          │
+│  ┌────────────────────────────────────────────────────────────────┐   │
+│  │  Prompt Result Display (Modal/New Page)                        │   │
+│  │  - HTML rendered output                                        │   │
+│  │  - Links to MD/JSON versions                                  │   │
+│  │  - Metadata (ticker, timestamp, model used)                   │   │
+│  └────────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    │ POST /prompt/run
+                                    │ {ticker: "AAPL"}
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    STOCK-MINIAPP ORCHESTRATOR                            │
+│              (FastAPI Service - Port 3001/api)                          │
+│                                                                          │
+│  Orchestrator Responsibilities:                                          │
+│  1. Coordinate multiple microservice calls                              │
+│  2. Handle errors and retries                                           │
+│  3. Transform data between services                                     │
+│  4. Manage workflow state                                                │
+│  5. Return unified response to UI                                      │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                    ┌───────────────┼───────────────┐
+                    │               │               │
+                    ▼               ▼               ▼
+        ┌─────────────────┐ ┌──────────────┐ ┌──────────────┐
+        │  data-store     │ │ prompt-      │ │ llm-provider │
+        │  (Port 8007)    │ │ manager      │ │ (Port 8001)  │
+        │                 │ │ (Port 8000)   │ │              │
+        │ GET /retrieve   │ │ POST /prompt │ │ POST /generate│
+        │ POST /store     │ │ /load-context│ │ (MOCK mode)  │
+        │ POST /update    │ │ POST /prompt │ │              │
+        └─────────────────┘ │ /fill        │ └──────────────┘
+                             └──────────────┘
+                    │               │
+                    ▼               ▼
+        ┌─────────────────┐ ┌──────────────┐
+        │ format-converter│ │ prompt-      │
+        │ (Port 8004)     │ │ security     │
+        │                 │ │ (Optional)   │
+        │ POST /convert   │ │ POST /validate│
+        │ (MD→HTML/JSON)  │ │              │
+        └─────────────────┘ └──────────────┘
+                                    │
+                                    ▼
+                        ┌──────────────────────┐
+                        │   MongoDB            │
+                        │   (Port 27017)       │
+                        │                      │
+                        │ Collections:         │
+                        │ - seed_companies     │
+                        │ - prompt_runs        │
+                        └──────────────────────┘
+```
+
+#### Orchestrator Concept
+
+**Important: Orchestrator is App-Dependent, Not a Module**
+
+The orchestrator is **application-specific workflow logic**, not a reusable module. It lives in `_dev/stock-miniapp/api/` and is specific to the stock-miniapp's needs. Other mini-apps can:
+- Create their own orchestrators for their specific workflows
+- Call modules directly (bypassing orchestrator)
+- Reuse modules independently
+
+**Why App-Dependent?**
+- Modules are reusable across applications
+- Orchestrator encodes this app's specific workflow
+- Different apps need different orchestration patterns
+- Keeps modules independent and reusable
+
+**Implementation Scope:**
+- **Flow C (Prompt Flow)**: Uses orchestrator (complex, 5-8 service calls)
+- **Flow A (Seed)**: Direct call (simple, single service)
+- **Flow B (Scrape)**: Direct calls (simple, two services)
+
+**What is an Orchestrator?**
+An orchestrator is a service that coordinates multiple microservices to complete a complex workflow. Instead of having the UI call each service directly, the orchestrator:
+1. **Orchestrates the flow**: Determines the sequence of service calls
+2. **Manages state**: Tracks progress through the workflow
+3. **Handles errors**: Provides retry logic and error recovery
+4. **Transforms data**: Converts data formats between services
+5. **Provides unified API**: Single endpoint for complex operations
+
+**Why Use an Orchestrator?**
+- ✅ **Simplifies UI**: UI makes one call instead of 5-8 calls
+- ✅ **Centralized logic**: Business workflow logic in one place
+- ✅ **Error handling**: Centralized retry and error recovery
+- ✅ **Transaction-like behavior**: Can rollback or compensate on failure
+- ✅ **Monitoring**: Single point to track workflow metrics
+- ✅ **Future extensibility**: Easy to add steps (e.g., caching, validation)
+
+**Orchestrator vs Direct Calls:**
+```
+❌ Without Orchestrator (Complex UI):
+UI → data-store (get company)
+UI → prompt-manager (load contexts)
+UI → prompt-manager (fill template)
+UI → prompt-security (validate)
+UI → llm-provider (generate)
+UI → data-store (store response)
+UI → format-converter (render)
+UI → data-store (update with HTML)
+
+✅ With Orchestrator (Simple UI):
+UI → orchestrator /prompt/run (one call)
+Orchestrator → coordinates all services internally
+UI ← orchestrator (unified response)
+```
+
+**Orchestrator Implementation Pattern:**
+```python
+# _dev/stock-miniapp/api/orchestrator.py
+class PromptOrchestrator:
+    def __init__(self):
+        self.data_store_url = "http://localhost:8007"
+        self.prompt_manager_url = "http://localhost:8000"
+        self.llm_provider_url = "http://localhost:8001"  # REST API service
+        self.format_converter_url = "http://localhost:8004"
+        self.prompt_security_url = "http://localhost:8002"  # Optional
+    
+    async def run_prompt_flow(self, ticker: str) -> Dict[str, Any]:
+        """
+        Orchestrate the complete prompt flow for a ticker.
+        
+        Steps:
+        1. Fetch company data from data-store
+        2. Load context files via prompt-manager
+        3. Fill prompt template with ticker + company data
+        4. Validate/sanitize prompt (if security module available)
+        5. Generate LLM response (mock mode)
+        6. Store prompt + response in data-store
+        7. Convert response to HTML/MD/JSON via format-converter
+        8. Update stored response with rendered formats
+        9. Return unified response to UI
+        """
+        run_id = str(uuid.uuid4())
+        
+        try:
+            # Step 1: Fetch company data
+            # Calls data-store API to retrieve company financial data from MongoDB seed_companies collection.
+            # Returns company data structure with valuation, financials, profitability fields.
+            company_data = await self._fetch_company_data(ticker)
+            
+            # Step 2: Load context files
+            # Calls prompt-manager API to load markdown context files from disk (e.g., biotech/01-introduction.md).
+            # Merges multiple context files into a single string for prompt composition.
+            contexts = await self._load_contexts()
+            
+            # Step 3: Fill prompt template
+            # Calls prompt-manager API to fill template variables with ticker, company_data, and contexts.
+            # Returns a complete prompt string ready for LLM processing.
+            filled_prompt = await self._fill_prompt(ticker, company_data, contexts)
+            
+            # Step 4: Validate prompt (optional)
+            # Calls prompt-security API to validate and sanitize the filled prompt for injection attacks.
+            # Returns sanitized prompt string, or original if security module unavailable (graceful degradation).
+            sanitized_prompt = await self._validate_prompt(filled_prompt)
+            
+            # Step 5: Generate LLM response
+            # Calls llm-provider REST API (port 8001) to generate response from sanitized prompt.
+            # Supports provider swapping via request parameters (use_mock=true for v1).
+            # Returns response with content, tokens_used, model, cost, and metadata.
+            llm_response = await self._generate_response(sanitized_prompt, ticker)
+            
+            # Step 6: Store in data-store
+            # Calls data-store API to persist prompt run in MongoDB prompt_runs collection.
+            # Stores run_id, ticker, prompt, raw LLM response, and metadata; returns stored key.
+            stored_key = await self._store_prompt_run(run_id, ticker, sanitized_prompt, llm_response)
+            
+            # Step 7: Convert to HTML/MD/JSON
+            # Calls format-converter API to render LLM response (markdown) into HTML, MD, and JSON formats.
+            # Returns dictionary with html, md, and json keys containing rendered content.
+            rendered_formats = await self._render_formats(llm_response)
+            
+            # Step 8: Update with rendered formats
+            # Calls data-store API to update the stored prompt run with HTML/MD/JSON rendered formats.
+            # Updates the prompt_runs document with llm_response_html, llm_response_md, llm_response_json fields.
+            await self._update_with_formats(stored_key, rendered_formats)
+            
+            return {
+                "success": True,
+                "run_id": run_id,
+                "ticker": ticker,
+                "html_url": f"/prompt/run/{run_id}/html",
+                "md_url": f"/prompt/run/{run_id}/md",
+                "json_url": f"/prompt/run/{run_id}/json",
+                "status": "completed"
+            }
+        except Exception as e:
+            # Error handling and logging
+            return {
+                "success": False,
+                "run_id": run_id,
+                "error": str(e),
+                "status": "failed"
+            }
+```
+
+#### Implementation Details
+
+##### 5.1 Add "Analyze" Button to Company Table
+
+**Location**: `_dev/stock-miniapp/web/client/src/App.js`
+
+**Changes:**
+- Add "Analyze" button column to `CompanyTable` component
+- Button triggers `handleAnalyzePrompt(ticker)` function
+- Show loading state while orchestrator processes request (10-20 seconds expected)
+- **UI Behavior (v1)**: Opens modal immediately, shows loading spinner, waits synchronously for orchestrator response
+- Display result in modal when complete (HTML/MD/JSON tabs)
+- **Note**: For v1, modal waits synchronously. Future enhancement: async/polling pattern for better UX
+
+**UI Flow:**
+```javascript
+// In CompanyTable component
+<tbody>
+  {companies.map((company, idx) => (
+    <tr key={idx}>
+      <td>{data.ticker}</td>
+      <td>{formatDate(retrievalDate)}</td>
+      <td>{valuation.marketCap}</td>
+      <td>{financials.revenue}</td>
+      <td>{profitability.profitMargin}</td>
+      <td>{valuation.trailingPE}</td>
+      <td>
+        <button 
+          onClick={() => handleAnalyzePrompt(data.ticker)}
+          disabled={analyzing === data.ticker}
+        >
+          {analyzing === data.ticker ? 'Analyzing...' : 'Analyze'}
+        </button>
+      </td>
+    </tr>
+  ))}
+</tbody>
+```
+
+##### 5.2 Create Orchestrator Service
+
+**Location**: `_dev/stock-miniapp/api/orchestrator.py` (new file)
+
+**Responsibilities:**
+- Coordinate all microservice calls
+- Handle errors and retries
+- Transform data between services
+- Return unified response
+
+**FastAPI Endpoint:**
+```python
+# _dev/stock-miniapp/api/orchestrator_service.py
+from fastapi import FastAPI, HTTPException
+from orchestrator import PromptOrchestrator
+
+app = FastAPI()
+orchestrator = PromptOrchestrator()
+
+@app.post("/prompt/run")
+async def run_prompt_flow(request: PromptRunRequest):
+    """
+    Orchestrate prompt flow for a ticker.
+    
+    Request: {ticker: "AAPL"}
+    Response: {run_id, ticker, html_url, status}
+    """
+    result = await orchestrator.run_prompt_flow(request.ticker)
+    return result
+
+@app.get("/prompt/run/{run_id}/html")
+async def get_html_result(run_id: str):
+    """Retrieve HTML result for a prompt run."""
+    # Query data-store for prompt_runs collection
+    # Return HTML content
+    pass
+
+@app.get("/prompt/run/{run_id}/md")
+async def get_md_result(run_id: str):
+    """Retrieve Markdown result for a prompt run."""
+    pass
+
+@app.get("/prompt/run/{run_id}/json")
+async def get_json_result(run_id: str):
+    """Retrieve JSON result for a prompt run."""
+    pass
+```
+
+##### 5.3 Integrate with Existing Services
+
+**Prompt Template:**
+- Use existing prompt templates from `prompt/` directory
+- Template should include placeholders for:
+  - `{ticker}` - Stock ticker symbol
+  - `{company_data}` - Company financial data (from data-store)
+  - `{context}` - Domain context (from prompt-manager)
+
+**Example Template:**
+```
+Analyze the following stock:
+
+Ticker: {ticker}
+
+Company Data:
+{company_data}
+
+Context:
+{context}
+
+Provide a comprehensive analysis including:
+1. Valuation assessment
+2. Financial health
+3. Growth prospects
+4. Risk factors
+5. Investment recommendation
+```
+
+##### 5.4 Data Storage Schema
+
+**Collection**: `prompt_runs`
+
+**Document Structure:**
+```json
+{
+  "key": "prompt_run:uuid-here",
+  "data": {
+    "run_id": "uuid-here",
+    "ticker": "AAPL",
+    "company_key": "company:AAPL:2025-12-13T11:30:00",  // Reference to seed_companies document
+    "prompt_template": "...",
+    "filled_prompt": "...",
+    "sanitized_prompt": "...",
+    "llm_response_raw": "...",
+    "llm_response_md": "...",
+    "llm_response_html": "<html>...</html>",
+    "llm_response_json": {...},
+    "company_data": {...},  // Snapshot of company data used in prompt
+    "metadata": {
+      "model_used": "mock",
+      "timestamp": "2025-12-13T...",
+      "status": "completed",
+      "context_files_loaded": ["biotech/01-introduction.md"]
+    }
+  },
+  "metadata": {
+    "source": "stock_miniapp",
+    "ticker": "AAPL",
+    "created_at": "2025-12-13T...",
+    "updated_at": "2025-12-13T..."
+  }
+}
+```
+
+**Linking Prompt Results with Company Data:**
+
+Since `prompt_runs` and `seed_companies` are in different collections, use one of these approaches:
+
+**Approach 1: Query by Ticker (Recommended)**
+- Both collections store `ticker` field
+- Query both collections separately and combine in application code
+- Simple, no schema changes needed
+
+**Query Pattern:**
+```python
+# Get company data from seed_companies
+company_result = data_store.query(
+    collection="seed_companies",
+    filters={"data.ticker": "AAPL"},
+    sort={"stored_at": -1},  # Get latest
+    limit=1
+)
+company_data = company_result.items[0].data if company_result.items else None
+
+# Get prompt runs for same ticker
+prompt_result = data_store.query(
+    collection="prompt_runs",
+    filters={"data.ticker": "AAPL"},
+    sort={"metadata.created_at": -1},  # Most recent first
+    limit=10
+)
+prompt_runs = prompt_result.items
+
+# Combine in application
+combined = {
+    "company": company_data,
+    "analyses": [run.data for run in prompt_runs]
+}
+```
+
+**Approach 2: Store Company Key Reference**
+- Store `company_key` in `prompt_runs` document (see schema above)
+- Allows direct lookup of the exact company document used
+- Useful when multiple company entries exist for same ticker
+
+**Implementation:**
+```python
+# In orchestrator, when storing prompt run:
+company_key = f"company:{ticker}:{company_data.get('extractedAt', datetime.now())}"
+
+stored_key = await self._store_prompt_run(
+    run_id=run_id,
+    ticker=ticker,
+    company_key=company_key,  # Store reference
+    sanitized_prompt=sanitized_prompt,
+    llm_response=llm_response
+)
+
+# Later, retrieve company by key:
+company = data_store.retrieve(key=company_key, collection="seed_companies")
+```
+
+**Approach 3: Store Run IDs in Company Document (Bidirectional)**
+- Add `prompt_run_ids` array to `seed_companies` documents
+- Allows finding all analyses for a company
+- Requires updating company document when prompt runs
+
+**Implementation:**
+```python
+# After storing prompt run, update company document:
+company_key = f"company:{ticker}:{timestamp}"
+data_store.update(
+    key=company_key,
+    collection="seed_companies",
+    data={
+        "$push": {"metadata.prompt_run_ids": run_id}  # Add run_id to array
+    }
+)
+
+# Query company with all its analyses:
+company = data_store.retrieve(key=company_key, collection="seed_companies")
+run_ids = company.metadata.get("prompt_run_ids", [])
+
+# Fetch all prompt runs:
+analyses = []
+for run_id in run_ids:
+    run = data_store.query(
+        collection="prompt_runs",
+        filters={"data.run_id": run_id},
+        limit=1
+    )
+    if run.items:
+        analyses.append(run.items[0].data)
+```
+
+**Recommended Approach:**
+
+**For v1 (Simple):** Use **Approach 1** (query by ticker) ✅ **SELECTED FOR IMPLEMENTATION**
+- No schema changes needed
+- Works immediately
+- Simple to implement
+- Both collections already have `ticker` field
+
+**For v2 (Enhanced):** Use **Approach 2** (store company_key) - **KEPT FOR FUTURE**
+- More precise linking
+- Handles multiple company entries per ticker
+- Minimal schema change (add `company_key` field)
+- Documented for future enhancement
+
+**For v3 (Bidirectional):** Use **Approach 3** (store run_ids array) - **KEPT FOR FUTURE**
+- Bidirectional linking
+- Allows finding all analyses for a company
+- Requires updating company document
+- Documented for future enhancement
+
+**API Endpoint for Reconnection:**
+
+```python
+@app.get("/prompt/run/{run_id}/with-company")
+async def get_prompt_run_with_company(run_id: str):
+    """
+    Retrieve prompt run with associated company data.
+    
+    Queries both collections and combines results.
+    """
+    # Get prompt run
+    prompt_run = await get_prompt_run(run_id)
+    
+    # Get company data by ticker
+    ticker = prompt_run["data"]["ticker"]
+    company_result = await data_store.query(
+        collection="seed_companies",
+        filters={"data.ticker": ticker},
+        sort={"stored_at": -1},
+        limit=1
+    )
+    
+    company_data = company_result["items"][0]["data"] if company_result["items"] else None
+    
+    return {
+        "run_id": run_id,
+        "prompt_run": prompt_run["data"],
+        "company": company_data,
+        "ticker": ticker
+    }
+```
+
+##### 5.5 REST API Call Chain (Detailed)
+
+**Step-by-Step Flow:**
+```
+1. UI → POST /api/prompt/run
+   Body: {ticker: "AAPL"}
+   
+2. Orchestrator → GET data-store /retrieve/{key}
+   Query: Find company by ticker in seed_companies
+   Response: {company data with valuation, financials, profitability}
+   
+3. Orchestrator → POST prompt-manager /prompt/load-contexts
+   Body: {context_paths: ["biotech/01-introduction.md", ...]}
+   Response: {contexts: [...]}
+   
+4. Orchestrator → POST prompt-manager /prompt/fill
+   Body: {
+     template_content: "...",
+     params: {
+       ticker: "AAPL",
+       company_data: {...},
+       context: "..."
+     }
+   }
+   Response: {filled_prompt: "..."}
+   
+5. Orchestrator → POST prompt-security /validate (optional)
+   Body: {prompt: "..."}
+   Response: {sanitized_prompt: "...", is_safe: true}
+   
+6. Orchestrator → POST llm-provider /generate (port 8001)
+   Body: {
+     prompt: "...",
+     provider: "mock",  # or "openai", "anthropic", "bedrock", etc.
+     model: "mock-model",
+     use_mock: true,  # Force mock mode (overrides provider)
+     ticker: "AAPL"  # Optional context for mock provider
+   }
+   Response: {
+     success: true,
+     content: "...",
+     provider: "mock",
+     model: "mock-model",
+     tokens_used: 100,
+     cost: 0.0
+   }
+   
+7. Orchestrator → POST data-store /store
+   Body: {
+     key: "prompt_run:uuid",
+     data: {run_id, ticker, prompt, response_raw, ...},
+     collection: "prompt_runs"
+   }
+   Response: {key: "prompt_run:uuid", success: true}
+   
+8. Orchestrator → POST format-converter /convert
+   Body: {
+     content: "...",
+     from_format: "markdown",
+     to_format: "html"
+   }
+   Response: {html: "<html>...</html>", md: "...", json: {...}}
+   
+9. Orchestrator → PUT data-store /update/{key}
+   Body: {
+     data: {llm_response_html: "...", llm_response_md: "...", ...}
+   }
+   Response: {success: true}
+   
+10. Orchestrator → UI
+    Response: {
+      success: true,
+      run_id: "uuid",
+      ticker: "AAPL",
+      html_url: "/prompt/run/uuid/html",
+      status: "completed"
+    }
+```
+
+##### 5.4 Rendering HTML/MD/JSON Results
+
+**Overview:**
+After the orchestrator completes the prompt flow, the UI needs to display the rendered HTML, Markdown, and JSON formats. The orchestrator stores all formats in MongoDB and provides endpoints to retrieve them. All operations are logged with `run_id` for traceability.
+
+**Backend Implementation (Orchestrator Endpoints):**
+
+**Location**: `_dev/stock-miniapp/api/orchestrator_service.py`
+
+**Key Features:**
+- Three endpoints: `/prompt/run/{run_id}/html`, `/md`, `/json`
+- Query MongoDB via data-store API to retrieve stored formats
+- Proper Content-Type headers for each format
+- Comprehensive logging with `run_id` context
+- Environment-aware logging (DEBUG in dev, INFO in prod)
+
+**Implementation Pattern:**
+
+```python
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse, PlainTextResponse, JSONResponse
+import httpx
+import logging
+import os
+
+# Configure logging based on environment
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+DEBUG_MODE = os.getenv("DEBUG", "false").lower() == "true"
+ENVIRONMENT = os.getenv("ENVIRONMENT", "production")
+
+logger = logging.getLogger(__name__)
+logger.setLevel(LOG_LEVEL)
+
+# Detailed logging in dev/debug mode (removable in prod)
+if DEBUG_MODE or ENVIRONMENT == "development":
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s [%(levelname)s] [run_id=%(run_id)s] %(name)s: %(message)s'
+    )
+else:
+    # Production: minimal logging, no sensitive data
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+    )
+
+@app.get("/prompt/run/{run_id}/html", response_class=HTMLResponse)
+async def get_html_result(run_id: str):
+    """Retrieve HTML result. All logs include run_id for traceability."""
+    logger.info(f"Retrieving HTML result", extra={"run_id": run_id})
+    
+    try:
+        async with httpx.AsyncClient() as client:
+            query_response = await client.post(
+                f"{DATA_STORE_URL}/query",
+                json={
+                    "collection": "prompt_runs",
+                    "filters": {"data.run_id": run_id},
+                    "limit": 1
+                }
+            )
+            
+            if query_response.status_code != 200:
+                logger.error(f"Failed to query data-store", extra={"run_id": run_id})
+                raise HTTPException(status_code=500, detail="Failed to retrieve prompt run")
+            
+            items = query_response.json().get("items", [])
+            if not items:
+                logger.warning(f"Prompt run not found", extra={"run_id": run_id})
+                raise HTTPException(status_code=404, detail=f"Prompt run {run_id} not found")
+            
+            html_content = items[0].get("data", {}).get("llm_response_html")
+            if not html_content:
+                logger.warning(f"HTML content not available", extra={"run_id": run_id})
+                raise HTTPException(status_code=404, detail=f"HTML not available for run {run_id}")
+            
+            logger.info(f"HTML retrieved successfully", extra={"run_id": run_id})
+            return HTMLResponse(content=html_content)
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(
+            f"Error retrieving HTML: {str(e)}",
+            extra={"run_id": run_id},
+            exc_info=DEBUG_MODE  # Full traceback only in debug mode
+        )
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+# Similar implementations for /md and /json endpoints
+```
+
+**Orchestrator Logging with Run ID:**
+
+All orchestrator steps must log with the same `run_id` for end-to-end traceability:
+
+```python
+# In orchestrator.py - Every step uses same run_id
+class PromptOrchestrator:
+    async def run_prompt_flow(self, ticker: str) -> Dict[str, Any]:
+        run_id = str(uuid.uuid4())
+        log_extra = {"run_id": run_id, "ticker": ticker}
+        
+        logger.info(f"Starting prompt flow", extra=log_extra)
+        
+        try:
+            # Step 1: Fetch company data
+            logger.debug(f"Step 1: Fetching company data", extra=log_extra)
+            company_data = await self._fetch_company_data(ticker)
+            logger.debug(f"Step 1: Company data retrieved", extra=log_extra)
+            
+            # Step 2: Load context files
+            logger.debug(f"Step 2: Loading context files", extra=log_extra)
+            contexts = await self._load_contexts()
+            logger.debug(f"Step 2: Context files loaded", extra=log_extra)
+            
+            # Step 3-8: All steps log with same run_id
+            # ... (similar pattern for all steps)
+            
+            logger.info(f"Prompt flow completed successfully", extra=log_extra)
+            return {"success": True, "run_id": run_id, ...}
+            
+        except Exception as e:
+            logger.error(
+                f"Prompt flow failed: {str(e)}",
+                extra=log_extra,
+                exc_info=DEBUG_MODE  # Full traceback only in debug
+            )
+            return {"success": False, "run_id": run_id, "error": str(e)}
+```
+
+**Logging Configuration:**
+
+**Environment Variables:**
+```bash
+# Development/Debug (detailed logging, removable in prod)
+DEBUG=true
+ENVIRONMENT=development
+LOG_LEVEL=DEBUG
+
+# Production (minimal logging, no sensitive data)
+DEBUG=false
+ENVIRONMENT=production
+LOG_LEVEL=INFO
+```
+
+**Log Levels:**
+- **DEBUG**: Step-by-step details (dev only, can be removed in prod)
+- **INFO**: Key milestones (start, completion, errors)
+- **WARNING**: Non-critical issues
+- **ERROR**: Failures with context
+
+**Frontend Implementation (React Modal):**
+
+**Location**: `_dev/stock-miniapp/web/client/src/PromptResultModal.js`
+
+**Features:**
+- Tabbed interface (HTML, Markdown, JSON tabs)
+- Lazy loading (loads format only when tab clicked)
+- HTML rendered with `dangerouslySetInnerHTML` in container
+- Markdown/JSON displayed in `<pre>` tags
+- Error handling and loading states
+- "Open in New Tab" option for HTML
+
+**Integration in App.js:**
+```javascript
+// Handle analyze button - receives run_id from orchestrator
+const handleAnalyzePrompt = async (ticker) => {
+  const response = await fetch('/api/prompt/run', {
+    method: 'POST',
+    body: JSON.stringify({ ticker })
+  });
+  const result = await response.json();
+  
+  if (result.success) {
+    setSelectedRunId(result.run_id);  // Store run_id for modal
+    setShowPromptModal(true);
+  }
+};
+
+// Modal fetches formats using run_id
+<PromptResultModal
+  runId={selectedRunId}
+  ticker={selectedTicker}
+  onClose={() => setShowPromptModal(false)}
+/>
+```
+
+**Response Formats:**
+- **HTML**: `text/html` - Full HTML document with CSS
+- **Markdown**: `text/markdown` - Plain text markdown
+- **JSON**: `application/json` - Structured JSON object
+
+**Error Handling:**
+- **404**: Run ID not found → User-friendly error message
+- **500**: Server error → Logged with run_id, generic error to user
+- **Missing format**: Format not available → Show message, allow other formats
+
+**Orchestrator Logging with Run ID:**
+
+All orchestrator methods include `run_id` in logging context:
+
+```python
+# Every step logs with run_id
+log_extra = {"run_id": run_id, "ticker": ticker}
+logger.debug(f"Step 1: Fetching company data", extra=log_extra)
+logger.info(f"Step 5: Generating LLM response", extra=log_extra)
+logger.error(f"Prompt flow failed", extra=log_extra, exc_info=DEBUG_MODE)
+```
+
+**Logging Configuration:**
+
+- **Development**: `DEBUG=true`, `LOG_LEVEL=DEBUG` - Detailed step-by-step logging
+- **Production**: `DEBUG=false`, `LOG_LEVEL=INFO` - Key milestones only
+- **Run ID Tracking**: All logs include `run_id` for end-to-end traceability
+- **Exception Details**: Full tracebacks only in debug mode (`exc_info=DEBUG_MODE`)
+
+**Frontend Implementation (React Modal):**
+
+**Location**: `_dev/stock-miniapp/web/client/src/PromptResultModal.js`
+
+**Features:**
+- Tabbed interface (HTML, Markdown, JSON)
+- Lazy loading (loads format on tab click)
+- HTML rendered with `dangerouslySetInnerHTML`
+- Markdown/JSON displayed in `<pre>` tags
+- Error handling and loading states
+- "Open in New Tab" option for HTML
+
+**Integration:**
+- Modal triggered from "Analyze" button in company table
+- Receives `run_id` from orchestrator response
+- Fetches formats from orchestrator endpoints via proxy
+
+#### Files to Create/Modify
+
+**Backend (stock-miniapp orchestrator):**
+- `_dev/stock-miniapp/api/orchestrator.py` - Orchestrator class with run_id logging
+- `_dev/stock-miniapp/api/orchestrator_service.py` - FastAPI service with format endpoints
+- `_dev/stock-miniapp/api/requirements.txt` - Python dependencies (httpx, fastapi, etc.)
+- `_dev/stock-miniapp/api/.env.example` - Environment variables (DEBUG, LOG_LEVEL, ENVIRONMENT)
+
+**Frontend (React UI):**
+- `_dev/stock-miniapp/web/client/src/App.js` - Add "Analyze" button and modal integration
+- `_dev/stock-miniapp/web/client/src/PromptResultModal.js` - Modal component for displaying results
+- `_dev/stock-miniapp/web/client/src/PromptResultModal.css` - Styles for modal and content display
+- `_dev/stock-miniapp/web/client/src/App.css` - Styles for button
+
+**Integration:**
+- `_dev/stock-miniapp/web/server.js` - Add proxy route for `/api/prompt/*`
+
+#### Testing Plan
+
+1. **Unit Test**: Test orchestrator methods individually
+2. **Integration Test**: Test full flow with all services running
+3. **UI Test**: Test button click → loading → result display
+4. **Error Test**: Test error handling (service down, invalid ticker, etc.)
+5. **Mock Test**: Verify mock LLM provider is used correctly
+
+#### Success Criteria
+
+- ✅ "Analyze" button added to each row in company table
+- ✅ Button triggers orchestrator endpoint
+- ✅ Orchestrator coordinates all microservices correctly
+- ✅ Prompt template filled with ticker + company data
+- ✅ LLM response generated (mock mode)
+- ✅ Response stored in MongoDB `prompt_runs` collection
+- ✅ HTML/MD/JSON rendered via format-converter
+- ✅ Rendered formats stored in MongoDB
+- ✅ UI displays HTML result in modal/new page
+- ✅ Error handling works (service failures, invalid data)
+- ✅ All services integrated (prompt-manager, prompt-security, llm-provider, data-store, format-converter)
+
+#### Dependencies
+
+**Required Services:**
+- data-store (port 8007) - Company data retrieval and prompt storage
+- prompt-manager (port 8000) - Template loading and filling
+- format-converter (port 8004) - HTML/MD/JSON rendering
+- prompt-security (port 8002) - Optional, graceful degradation if unavailable
+
+**Required Services:**
+- llm-provider (port 8001) - Response generation (REST API service with provider swapping)
+  - Supports provider swapping via request parameters or environment variables
+  - Default: mock provider for v1 (use_mock=true)
+  - Can switch to OpenAI, Anthropic, Bedrock, etc. via configuration
+
+**Python Dependencies:**
+- `fastapi>=0.104.0` - Orchestrator API
+- `uvicorn[standard]>=0.24.0` - ASGI server
+- `httpx>=0.25.0` - HTTP client for service calls
+- `pydantic>=2.0.0` - Request/response validation
+- `llm-provider` (from `_dev/llm-provider`) - LLM provider library (for MockProvider)
+
+#### Notes
+
+- **Orchestrator Pattern**: Centralizes workflow logic, simplifies UI, enables monitoring
+- **Mock LLM**: First iteration uses mock provider; design is pluggable for Bedrock later
+- **Error Handling**: Orchestrator handles service failures gracefully
+- **Future Extensions**: Easy to add caching, retries, rate limiting, etc.
+- **UI Autocomplete**: Postponed to future iteration; current flow starts from table  
+### Step 6: Periodic Materialization Job (Optional)
+
+#### Overview
+Create a background job that regenerates MD/HTML/JSON formats from stored prompt responses without re-running the LLM. This is useful when:
+- Format-converter is updated with new rendering features
+- HTML templates are improved
+- Need to regenerate formats for historical data
+
+#### Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│         Periodic Materialization Job                    │
+│         (Python Script / Cron / Scheduled Task)         │
+└─────────────────────────────────────────────────────────┘
+                    │
+                    │ Query prompt_runs collection
+                    ▼
+        ┌───────────────────────────┐
+        │   data-store              │
+        │   (Port 8007)             │
+        │                           │
+        │ POST /query               │
+        │ Filters:                  │
+        │ - status: "completed"     │
+        │ - llm_response_html: null │
+        │   OR updated_at < job_run │
+        └───────────────────────────┘
+                    │
+                    │ For each prompt_run:
+                    ▼
+        ┌───────────────────────────┐
+        │   format-converter         │
+        │   (Port 8004)              │
+        │                           │
+        │ POST /convert             │
+        │ Input: llm_response_md    │
+        │ Output: HTML, JSON        │
+        └───────────────────────────┘
+                    │
+                    │ Update prompt_runs
+                    ▼
+        ┌───────────────────────────┐
+        │   data-store              │
+        │   (Port 8007)             │
+        │                           │
+        │ PUT /update/{key}         │
+        │ Update: llm_response_html │
+        │        llm_response_json  │
+        └───────────────────────────┘
+```
+
+#### Implementation
+
+**Location**: `_dev/stock-miniapp/scripts/materialize_formats.py`
+
+**Job Flow:**
+1. Query `prompt_runs` collection for completed runs
+2. Filter: runs without HTML or runs older than last materialization
+3. For each run:
+   - Extract `llm_response_md` or `llm_response_raw`
+   - Call format-converter to generate HTML/JSON
+   - Update prompt_runs document with new formats
+4. Log results and metrics
+
+**Scheduling Options:**
+- **Cron**: Run daily/weekly via system cron
+- **Python scheduler**: Use `schedule` library for in-process scheduling
+- **AWS EventBridge**: For cloud deployment
+- **Manual**: CLI command for on-demand runs
+
+**Example CLI:**
+```bash
+# Run materialization job
+python scripts/materialize_formats.py --collection prompt_runs --dry-run
+
+# Materialize specific run
+python scripts/materialize_formats.py --run-id uuid-here
+
+# Materialize all runs without HTML
+python scripts/materialize_formats.py --missing-html-only
+```
+
+#### Files to Create
+
+- `_dev/stock-miniapp/scripts/materialize_formats.py` - Main job script
+- `_dev/stock-miniapp/scripts/requirements.txt` - Job dependencies
+- `_dev/stock-miniapp/scripts/README.md` - Job documentation
+
+#### Success Criteria
+
+- ✅ Job queries prompt_runs collection correctly
+- ✅ Identifies runs needing materialization
+- ✅ Calls format-converter for each run
+- ✅ Updates MongoDB with new formats
+- ✅ Handles errors gracefully (skip failed runs, continue)
+- ✅ Provides logging and metrics
+- ✅ Can run manually or via scheduler
+
+---
+
+### Step 7: Hardening & Metrics
+
+#### Overview
+Ensure all services expose Prometheus metrics and integrate with centralized monitoring. Add basic dashboards for observability.
+
+#### Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│              Prometheus (Port 9090)                      │
+│         Scrapes metrics from all services                │
+└─────────────────────────────────────────────────────────┘
+                    │
+        ┌───────────┼───────────┬───────────┐
+        │           │           │           │
+        ▼           ▼           ▼           ▼
+┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐
+│ data-     │ │ prompt-  │ │ llm-     │ │ format-  │
+│ retriever │ │ manager  │ │ provider │ │ converter│
+│ :8003     │ │ :8000    │ │ :8001    │ │ :8004    │
+│ /metrics  │ │ /metrics │ │ /metrics │ │ /metrics │
+└──────────┘ └──────────┘ └──────────┘ └──────────┘
+        │           │           │           │
+        ▼           ▼           ▼           ▼
+┌─────────────────────────────────────────────────────────┐
+│              Grafana (Port 3000)                        │
+│         Visualizes metrics and dashboards               │
+└─────────────────────────────────────────────────────────┘
+```
+
+#### Metrics to Expose
+
+**Orchestrator Metrics:**
+- `stock_miniapp_prompt_runs_total` - Total prompt runs (by status: success, failed)
+- `stock_miniapp_prompt_duration_seconds` - Duration histogram
+- `stock_miniapp_orchestrator_errors_total` - Error counts (by service)
+- `stock_miniapp_service_calls_total` - Service call counts (by service, status)
+
+**Service Metrics (Already Exposed):**
+- data-retriever: Operations, cache hits, errors
+- prompt-manager: Token usage, validation counts
+- llm-provider: Generation counts, latency
+- format-converter: Conversion counts, errors
+- data-store: CRUD operations, query performance
+
+#### Implementation
+
+**Orchestrator Metrics:**
+- Add Prometheus client to orchestrator service
+- Track workflow metrics (duration, success/failure)
+- Track service call metrics (which services called, success/failure)
+- Expose `/metrics` endpoint
+
+**Grafana Dashboard:**
+- Create dashboard for stock-miniapp
+- Panels:
+  - Prompt runs over time (success vs failed)
+  - Average prompt duration
+  - Service call distribution
+  - Error rates by service
+  - Most analyzed tickers
+
+**Files to Create/Modify:**
+- `_dev/stock-miniapp/api/orchestrator.py` - Add metrics collection
+- `_dev/stock-miniapp/api/orchestrator_service.py` - Add `/metrics` endpoint
+- `_dev/monitoring/grafana/dashboards/stock-miniapp.json` - Dashboard definition
+
+#### Success Criteria
+
+- ✅ Orchestrator exposes `/metrics` endpoint
+- ✅ All workflow metrics tracked
+- ✅ Service call metrics tracked
+- ✅ Grafana dashboard created
+- ✅ Metrics visible in Grafana
+- ✅ Alerts configured (optional)
+
+---
+
+### Step 8: Swap LLM Provider to Bedrock (Future)
+
+#### Overview
+Replace mock LLM provider with AWS Bedrock, using configuration only (no flow changes). This demonstrates the pluggable architecture.
+
+#### Architecture Change
+
+```
+Current (Step 5):
+┌──────────────┐
+│ Orchestrator │
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│ llm-provider │
+│ (Mock Mode)  │
+└──────────────┘
+
+Future (Step 8):
+┌──────────────┐
+│ Orchestrator │
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│ llm-provider │
+│ (Bedrock)    │
+│              │
+│ Config:      │
+│ - model:     │
+│   claude-3   │
+│ - region:    │
+│   us-east-1  │
+│ - use_mock:  │
+│   false      │
+└──────────────┘
+       │
+       ▼
+┌──────────────┐
+│ AWS Bedrock  │
+│ API          │
+└──────────────┘
+```
+
+#### Configuration Strategy
+
+**Environment Variables:**
+```bash
+# _dev/llm-provider/.env
+LLM_PROVIDER_BACKEND=bedrock  # or "mock", "openai", "litellm"
+BEDROCK_MODEL_ID=anthropic.claude-3-sonnet-20240229-v1:0
+BEDROCK_REGION=us-east-1
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+USE_MOCK=false
+```
+
+**Orchestrator Configuration:**
+```python
+# No changes needed - orchestrator calls llm-provider API
+# llm-provider handles backend selection internally
+```
+
+**Flow Remains Identical:**
+- Orchestrator still calls `POST /llm-provider/generate`
+- Request body unchanged: `{prompt: "...", model: "claude-3", use_mock: false}`
+- Response format unchanged: `{response: "...", model: "claude-3"}`
+- Only backend changes (mock → Bedrock)
+
+#### Implementation Steps
+
+1. **Configure llm-provider:**
+   - Add Bedrock provider implementation (if not exists)
+   - Update `.env` to use Bedrock
+   - Test Bedrock connection
+
+2. **Update orchestrator config:**
+   - Set `use_mock: false` in orchestrator request
+   - No code changes needed
+
+3. **Test:**
+   - Run prompt flow with Bedrock
+   - Verify responses stored correctly
+   - Check metrics and monitoring
+
+#### Files to Modify
+
+- `_dev/llm-provider/.env` - Change backend configuration
+- `_dev/stock-miniapp/api/orchestrator.py` - Set `use_mock: false` (or from config)
+
+#### Success Criteria
+
+- ✅ Bedrock provider configured
+- ✅ Prompt flow works with Bedrock
+- ✅ Responses stored correctly
+- ✅ No flow changes required
+- ✅ Metrics track Bedrock usage
+- ✅ Error handling works (rate limits, timeouts)
+
+#### Notes
+
+- **Pluggable Design**: Architecture supports provider swap via configuration
+- **No Flow Changes**: Orchestrator and UI unchanged
+- **Cost Considerations**: Bedrock usage will incur AWS costs
+- **Rate Limits**: Bedrock has rate limits; implement retry logic
+- **Monitoring**: Track Bedrock API calls, latency, costs  
 
 Please review and adjust before we implement.
 

@@ -97,3 +97,9 @@ build/
 dist/
 *.tsbuildinfo
 
+# Service management files (from startup scripts)
+.service_pids
+
+# Service logs directories
+**/logs/
+

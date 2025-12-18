@@ -97,8 +97,29 @@ if result.success:
 
 The module includes a FastAPI service for exposing data retrieval via REST API:
 
+### Recommended: Using run_api.sh (Automatic venv)
+
 ```bash
 cd _dev/data-retriever
+./run_api.sh
+```
+
+This script automatically:
+- Activates `venv` or `.venv` if present (no manual activation needed)
+- Checks optional dependencies (e.g., `yfinance`)
+- Shows backend configuration
+- Starts the API service
+
+### Alternative: Direct Python
+
+```bash
+cd _dev/data-retriever
+python api_service.py
+```
+
+**Note**: If you have a `venv` in the module directory, activate it first:
+```bash
+source venv/bin/activate  # or source .venv/bin/activate
 python api_service.py
 ```
 

@@ -108,12 +108,14 @@ class MongoDBStore(DataStore):
         query = {}
         
         # Expiry filter
-        query["$or"] = [
+        expiry_or = [
             {"expires_at": {"$exists": False}},
             {"expires_at": None},
             {"expires_at": {"$gt": datetime.now()}}
         ]
         
+        # Build field filters
+        field_filters = []
         for field, value in filters.items():
             if field == "source":
                 query["source"] = value
@@ -121,10 +123,17 @@ class MongoDBStore(DataStore):
                 query["key"] = value
             else:
                 # Search in metadata or data
-                query[f"$or"] = [
-                    {f"metadata.{field}": value},
-                    {f"data.{field}": value}
-                ]
+                field_filters.append({f"metadata.{field}": value})
+                field_filters.append({f"data.{field}": value})
+        
+        # Combine expiry and field filters with $and
+        if field_filters:
+            query["$and"] = [
+                {"$or": expiry_or},
+                {"$or": field_filters}
+            ]
+        else:
+            query["$or"] = expiry_or
         
         # Count total
         total = self.collection.count_documents(query)

@@ -6,11 +6,22 @@ Run on port 8003 (configurable).
 """
 
 import os
+from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import PlainTextResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
+
+# Load .env from module directory
+try:
+    from dotenv import load_dotenv
+    module_dir = Path(__file__).parent
+    env_file = module_dir / ".env"
+    load_dotenv(env_file)
+except ImportError:
+    # python-dotenv not installed, skip .env loading
+    pass
 
 try:
     from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
@@ -54,7 +65,13 @@ retrievers = {
 
 # Optional retrievers
 try:
-    retrievers["yahoo_finance"] = YahooFinanceRetriever(cache=cache, enable_metrics=True)
+    # Read use_mock from environment (with default)
+    default_use_mock = os.getenv("YAHOO_FINANCE_USE_MOCK", "false").lower() == "true"
+    retrievers["yahoo_finance"] = YahooFinanceRetriever(
+        cache=cache,
+        enable_metrics=True,
+        use_mock=default_use_mock
+    )
 except Exception:
     pass
 
