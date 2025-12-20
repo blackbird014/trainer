@@ -1,0 +1,6 @@
+miniapps:
+  - name: stock-miniapp
+    url: http://localhost:3003
+polling_interval: 30
+port: 8008
+

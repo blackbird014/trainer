@@ -1,0 +1,14 @@
+services:
+  - name: stock-miniapp
+    url: http://localhost:3003
+  - name: data-store
+    url: http://localhost:8007
+  - name: data-retriever
+    url: http://localhost:8003
+  - name: prompt-manager
+    url: http://localhost:8000
+  - name: llm-provider
+    url: http://localhost:8001
+  - name: format-converter
+    url: http://localhost:8004
+

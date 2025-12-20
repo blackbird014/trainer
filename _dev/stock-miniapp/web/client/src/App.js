@@ -96,6 +96,11 @@ function App() {
   // DB Viewer state
   const [showDBViewer, setShowDBViewer] = useState(false);
 
+  // Monitoring test state
+  const [monitoringTestLoading, setMonitoringTestLoading] = useState(false);
+  const [monitoringTestResult, setMonitoringTestResult] = useState(null);
+  const [monitoringTestError, setMonitoringTestError] = useState(null);
+
   // Load last 10 companies on mount and after operations
   // Only show the latest entry for each ticker
   const loadLastCompanies = async () => {
@@ -348,6 +353,34 @@ function App() {
     }
   };
 
+  // Test monitoring functionality
+  const handleTestMonitoring = async () => {
+    setMonitoringTestLoading(true);
+    setMonitoringTestError(null);
+    setMonitoringTestResult(null);
+
+    try {
+      const response = await fetch('/monitoring/test', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || errorData.error || 'Failed to test monitoring');
+      }
+
+      const data = await response.json();
+      setMonitoringTestResult(data);
+    } catch (err) {
+      setMonitoringTestError(err.message || 'Failed to test monitoring');
+    } finally {
+      setMonitoringTestLoading(false);
+    }
+  };
+
   // Show DB Viewer if requested
   if (showDBViewer) {
     return (
@@ -360,25 +393,119 @@ function App() {
       <header className="App-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h1>Stock Mini-App - Admin Panel</h1>
-          <button
-            onClick={() => setShowDBViewer(true)}
-            style={{
-              background: 'white',
-              color: '#282c34',
-              border: 'none',
-              padding: '10px 20px',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '16px',
-              fontWeight: 'bold'
-            }}
-          >
-            View Database Collections
-          </button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button
+              onClick={handleTestMonitoring}
+              disabled={monitoringTestLoading}
+              style={{
+                background: monitoringTestLoading ? '#666' : '#61dafb',
+                color: '#282c34',
+                border: 'none',
+                padding: '10px 20px',
+                borderRadius: '4px',
+                cursor: monitoringTestLoading ? 'not-allowed' : 'pointer',
+                fontSize: '14px',
+                fontWeight: 'bold'
+              }}
+            >
+              {monitoringTestLoading ? 'Testing...' : 'Test Monitoring'}
+            </button>
+            <button
+              onClick={() => setShowDBViewer(true)}
+              style={{
+                background: 'white',
+                color: '#282c34',
+                border: 'none',
+                padding: '10px 20px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '16px',
+                fontWeight: 'bold'
+              }}
+            >
+              View Database Collections
+            </button>
+          </div>
         </div>
       </header>
 
       <main className="App-main">
+        {/* Monitoring Test Results */}
+        {(monitoringTestResult || monitoringTestError) && (
+          <section className="monitoring-test-section" style={{
+            margin: '20px 0',
+            padding: '15px',
+            borderRadius: '4px',
+            background: monitoringTestError ? '#ffebee' : '#e8f5e9',
+            border: `1px solid ${monitoringTestError ? '#f44336' : '#4caf50'}`
+          }}>
+            <h2 style={{ marginTop: 0 }}>Monitoring Test Results</h2>
+            {monitoringTestError ? (
+              <div style={{ color: '#d32f2f' }}>
+                <strong>Error:</strong> {monitoringTestError}
+              </div>
+            ) : monitoringTestResult ? (
+              <div>
+                <p><strong>Status:</strong> <span style={{
+                  color: monitoringTestResult.status === 'ok' ? '#2e7d32' : '#d32f2f',
+                  fontWeight: 'bold'
+                }}>{monitoringTestResult.status.toUpperCase()}</span></p>
+                <p><strong>Monitoring Available:</strong> {monitoringTestResult.monitoring_available ? '✅ Yes' : '❌ No'}</p>
+                {monitoringTestResult.tests && (
+                  <div style={{ marginTop: '10px' }}>
+                    <strong>Test Results:</strong>
+                    <ul style={{ marginTop: '5px' }}>
+                      {monitoringTestResult.tests.config_file_exists !== undefined && (
+                        <li>Config file exists: {monitoringTestResult.tests.config_file_exists ? '✅' : '❌'}</li>
+                      )}
+                      {monitoringTestResult.tests.config_load !== undefined && (
+                        <li>Config loads: {monitoringTestResult.tests.config_load ? '✅' : '❌'}</li>
+                      )}
+                      {monitoringTestResult.tests.services_count !== undefined && (
+                        <li>Services configured: {monitoringTestResult.tests.services_count}</li>
+                      )}
+                      {monitoringTestResult.tests.targets_generation !== undefined && (
+                        <li>Targets generation: {monitoringTestResult.tests.targets_generation ? '✅' : '❌'}</li>
+                      )}
+                      {monitoringTestResult.tests.targets_count !== undefined && (
+                        <li>Targets generated: {monitoringTestResult.tests.targets_count}</li>
+                      )}
+                      {monitoringTestResult.tests.monitoring_service_reachable !== undefined && (
+                        <li>Monitoring service reachable: {monitoringTestResult.tests.monitoring_service_reachable ? '✅' : '❌'}</li>
+                      )}
+                    </ul>
+                    {monitoringTestResult.tests.services && monitoringTestResult.tests.services.length > 0 && (
+                      <div style={{ marginTop: '10px' }}>
+                        <strong>Services:</strong> {monitoringTestResult.tests.services.join(', ')}
+                      </div>
+                    )}
+                    {monitoringTestResult.tests.targets && (
+                      <details style={{ marginTop: '10px' }}>
+                        <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>View Generated Targets</summary>
+                        <pre style={{
+                          background: '#f5f5f5',
+                          padding: '10px',
+                          borderRadius: '4px',
+                          overflow: 'auto',
+                          maxHeight: '300px',
+                          fontSize: '12px'
+                        }}>
+                          {JSON.stringify(monitoringTestResult.tests.targets, null, 2)}
+                        </pre>
+                      </details>
+                    )}
+                  </div>
+                )}
+                {monitoringTestResult.error && (
+                  <div style={{ marginTop: '10px', color: '#d32f2f' }}>
+                    <strong>Error:</strong> {monitoringTestResult.error}
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </section>
+        )}
+
         <section className="seed-section">
           <h2>Seed Companies</h2>
           <p>Generate and store fake company data in MongoDB.</p>

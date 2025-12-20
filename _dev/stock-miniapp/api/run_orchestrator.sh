@@ -27,6 +27,17 @@ if ! python -c "import fastapi" 2>/dev/null; then
     fi
 fi
 
+# Check if monitoring package is installed (required for /monitoring/targets endpoint)
+if ! python -c "import monitoring.prometheus_sd" 2>/dev/null; then
+    echo "⚠️  Monitoring library not found. Installing..."
+    MONITORING_DIR="$(cd "$SCRIPT_DIR/../../monitoring" && pwd)"
+    if [ -f "$MONITORING_DIR/pyproject.toml" ]; then
+        pip install -e "$MONITORING_DIR" 2>/dev/null || {
+            echo "⚠️  Warning: Failed to install monitoring library. /monitoring/targets endpoint will not work."
+        }
+    fi
+fi
+
 # Run the orchestrator service
 echo "🚀 Starting Stock Mini-App Orchestrator..."
 echo "   Port: ${PORT:-3002}"

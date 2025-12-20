@@ -215,8 +215,32 @@ else
 fi
 echo ""
 
-# Step 9: Start Express web server (port 3003)
-echo -e "${BLUE}Step 9: Starting Express web server (port 3003)...${NC}"
+# Step 9: Start monitoring service (port 8008) - Optional but recommended
+echo -e "${BLUE}Step 9: Starting monitoring service (port 8008)...${NC}"
+# Use orchestrator's venv (monitoring package should be installed there)
+cd "$PROJECT_ROOT/_dev/stock-miniapp/api"
+if [ -d "venv" ]; then
+    source venv/bin/activate 2>/dev/null || true
+elif [ -d ".venv" ]; then
+    source .venv/bin/activate 2>/dev/null || true
+fi
+# Install monitoring package if needed (editable install)
+cd "$PROJECT_ROOT/_dev/monitoring"
+if ! python -c "import monitoring" 2>/dev/null; then
+    echo "  Installing monitoring package..."
+    pip install -e . > /dev/null 2>&1 || echo -e "  ${YELLOW}⚠ Failed to install monitoring package${NC}"
+fi
+python api_service.py > "$SCRIPT_DIR/logs/monitoring.log" 2>&1 &
+MONITORING_PID=$!
+echo $MONITORING_PID >> "$PID_FILE"
+echo "  PID: $MONITORING_PID"
+echo "  Log: $SCRIPT_DIR/logs/monitoring.log"
+sleep 2
+wait_for_service 8008 "monitoring" || echo -e "  ${YELLOW}⚠ Monitoring service started but not ready (may need more time)${NC}"
+echo ""
+
+# Step 10: Start Express web server (port 3003)
+echo -e "${BLUE}Step 10: Starting Express web server (port 3003)...${NC}"
 cd "$PROJECT_ROOT/_dev/stock-miniapp/web"
 if [ ! -d "node_modules" ]; then
     echo "  Installing npm dependencies..."
@@ -243,6 +267,7 @@ echo "  - prompt-manager:  http://localhost:8000"
 echo "  - llm-provider:     http://localhost:8001"
 echo "  - format-converter: http://localhost:8004"
 echo "  - orchestrator:    http://localhost:3002"
+echo "  - monitoring:       http://localhost:8008"
 echo "  - Web UI:           http://localhost:3003"
 echo ""
 echo -e "${YELLOW}Logs are available in: $SCRIPT_DIR/logs/${NC}"

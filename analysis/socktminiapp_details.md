@@ -154,64 +154,276 @@ This document outlines how to inspect the running mini-app (stock-miniapp) focus
 
 ### Logs and metrics analysis
 
-**Decision:** Follow the recommendation: keep monitoring generic with `/metrics` + maintained scrape targets for Prometheus/Grafana. Standardize a tiny "targets/monitoring registry" endpoint per mini-app (including stock-miniapp and any future mini-apps) when dynamic discovery is needed; fall back to static targets if that suffices.
+**Decision:** Implement a centralized monitoring architecture with a standalone monitoring service that polls mini-apps to discover services dynamically. Mini-apps use a shared monitoring library to expose their service configurations. This approach scales well for 1-3 mini-apps per customer and can be extended with messaging queues if needed for larger scale.
+
+**Architecture Overview:**
+
+The monitoring system consists of three components:
+
+1. **Monitoring Service (Standalone)**
+   - Runs as an independent FastAPI service
+   - Polls mini-apps periodically (e.g., every 30 seconds) to discover services
+   - Aggregates service information from all mini-apps
+   - Exposes Prometheus HTTP Service Discovery (HTTP SD) endpoint
+   - Location: `_dev/monitoring/` (as a Python package with standalone API service)
+
+2. **Monitoring Library (Python Package)**
+   - Installable package: `pip install -e _dev/monitoring`
+   - Provides shared utilities for mini-apps
+   - Defines the "contract" (API signature) between monitoring and mini-apps
+   - Location: `_dev/monitoring/src/monitoring/prometheus_sd.py`
+
+3. **Mini-Apps**
+   - Import the monitoring library
+   - Know their own dependencies (which modules they use)
+   - Expose endpoint: `GET /monitoring/targets`
+   - Provide configuration: list of services they use with URLs
+
+**Data Flow:**
+
+```
+Monitoring Service (standalone)
+    │
+    │ (polls every 30s)
+    │
+    ├─→ Stock Mini-App
+    │       │
+    │       ├─→ Uses monitoring library
+    │       ├─→ Provides config: ['data-store:8007', 'llm-provider:8001', ...]
+    │       └─→ Exposes: GET /monitoring/targets
+    │
+    └─→ (aggregates all services)
+         │
+         └─→ Exposes: GET /monitoring/targets (for Prometheus)
+              │
+              └─→ Prometheus HTTP SD
+                   └─→ Scrapes all discovered services
+```
 
 **Implementation details:**
 
-1. **Monitoring Registry Endpoint:**
-   - Add `GET /monitoring/targets` endpoint to stock-miniapp API
-   - Location: `_dev/stock-miniapp/api/` (or main API file)
-   - Returns JSON array of Prometheus scrape target configurations
-
-2. **Response Format:**
-   ```json
-   {
-     "targets": [
-       {
-         "job": "stock-miniapp",
-         "instance": "stock-miniapp-api",
-         "url": "http://localhost:8000/metrics"
-       },
-       {
-         "job": "data-store",
-         "instance": "data-store-service",
-         "url": "http://localhost:8001/metrics"
-       },
-       {
-         "job": "prompt-manager",
-         "instance": "prompt-manager-service",
-         "url": "http://localhost:8002/metrics"
-       }
+1. **Make monitoring a Python package:**
+   - Add `pyproject.toml` to `_dev/monitoring/` with dependencies:
+     ```toml
+     dependencies = [
+         "fastapi>=0.104.0",
+         "uvicorn[standard]>=0.24.0",
+         "httpx>=0.24.0",      # For async HTTP polling
+         "pyyaml>=6.0.0",       # For YAML config files
+         "pydantic>=2.0.0",     # For data validation
      ]
-   }
-   ```
-
-3. **Configuration:**
-   - Maintain a config file or environment-based list of module service URLs
-   - File: `_dev/stock-miniapp/api/monitoring_config.py` or similar
-   - Read service URLs from environment variables (e.g., `DATA_STORE_URL`, `PROMPT_MANAGER_URL`) or a config file
-   - Include the mini-app's own metrics endpoint in the list
-
-4. **Prometheus Integration:**
-   - Option A (static): Use existing `prometheus.yml` with hardcoded targets (current approach)
-   - Option B (dynamic): Configure Prometheus HTTP SD (Service Discovery) to poll `GET /monitoring/targets` endpoint
-   - For HTTP SD, add to `prometheus.yml`:
-     ```yaml
-     scrape_configs:
-       - job_name: 'stock-miniapp-services'
-         http_sd_configs:
-           - url: 'http://localhost:8000/monitoring/targets'
-             refresh_interval: 30s
+     ```
+   - Create `src/monitoring/` directory structure (location: `_dev/monitoring/src/monitoring/`)
+   - Create `src/monitoring/__init__.py` to export public API
+   - Create `src/monitoring/prometheus_sd.py` with utility functions:
+     ```python
+     from pathlib import Path
+     from typing import List, Dict, Any
+     
+     def load_services_config(config_path: Path) -> Dict[str, str]:
+         """
+         Load services configuration from YAML file.
+         Returns: Dict mapping service name to URL, e.g. {'data-store': 'http://localhost:8007', ...}
+         """
+         
+     def create_prometheus_targets(services_config: Dict[str, str], 
+                                    miniapp_name: str = None) -> List[Dict[str, Any]]:
+         """
+         Convert services config to Prometheus HTTP SD format.
+         Returns: List of Prometheus target dicts with 'targets' and 'labels' keys
+         """
+         
+     def format_target_url(url: str) -> str:
+         """
+         Format URL for Prometheus (strip protocol, extract host:port).
+         Returns: Target string like 'localhost:8007'
+         """
+     ```
+   - Install in venv: `pip install -e _dev/monitoring` (automatically installs into active venv)
+   - Development workflow:
+     ```bash
+     # Activate mini-app venv
+     cd _dev/stock-miniapp/api
+     source venv/bin/activate
+     
+     # Install monitoring library (installs into this venv)
+     pip install -e ../../monitoring
      ```
 
-5. **Future mini-apps:**
-   - Each mini-app should implement the same `GET /monitoring/targets` endpoint
-   - Prometheus can scrape multiple mini-app endpoints for multi-app environments
-   - Standardize the response format across all mini-apps for consistency
+2. **Create standalone monitoring API service:**
+   - File: `_dev/monitoring/api_service.py`
+   - FastAPI service that:
+     - Maintains list of mini-app URLs to poll (config file or environment)
+     - Runs periodic polling job using asyncio (every 30 seconds)
+     - Implements hash-based caching to detect changes per mini-app
+     - Aggregates targets from all mini-apps
+     - Exposes `GET /monitoring/targets` endpoint in Prometheus HTTP SD format
+     - Exposes `GET /monitoring/health` for health checks (shows mini-app reachability)
+     - Exposes `POST /monitoring/refresh` to force full cache refresh
+     - Exposes `POST /monitoring/refresh/{miniapp_url}` to force refresh for specific mini-app
+   - **Polling implementation:**
+     - Use asyncio periodic task (not FastAPI BackgroundTasks, which runs after response)
+     - Startup event creates async polling task:
+       ```python
+       @app.on_event("startup")
+       async def start_polling():
+           asyncio.create_task(poll_miniapps_periodically())
+       
+       async def poll_miniapps_periodically():
+           while True:
+               await poll_and_update_cache()
+               await asyncio.sleep(30)  # 30 second interval
+       ```
+   - **Caching strategy:**
+     - Cache structure: `{miniapp_url: {"hash": "...", "targets": [...], "last_update": timestamp}}`
+     - Hash: SHA256 of targets JSON (detects changes at module service level)
+     - On startup: Load all mini-apps, cache with hash
+     - On poll: Compare hash, update cache only if changed
+     - Force refresh endpoints: API endpoints that trigger immediate refresh (future: can call from script/UI)
+   - **Error handling:**
+     - If mini-app is down: Keep last known good cache entry, log warning, don't fail
+     - Health endpoint shows which mini-apps are reachable
+     - Future: Heartbeat/health checks can mark services as unhealthy
+   - Configuration: `_dev/monitoring/config.yml` or environment variables:
+     ```yaml
+     miniapps:
+       - url: http://localhost:3003
+         name: stock-miniapp
+     polling_interval: 30
+     port: 8008  # Configurable via PORT environment variable
+     ```
 
-6. **Fallback:**
-   - If dynamic discovery isn't needed, skip the endpoint and use static `prometheus.yml` targets
-   - The endpoint can be added later without breaking existing static configurations
+3. **Mini-app integration (stock-miniapp example):**
+   - Install monitoring library in mini-app's venv: `pip install -e ../monitoring`
+     - Note: When working in venv, `pip install -e` automatically installs into the active venv
+     - No special handling needed - just activate venv and install
+   - Create configuration file: `_dev/stock-miniapp/api/monitoring_config.yaml`:
+     ```yaml
+     services:
+       - name: stock-miniapp
+         url: http://localhost:3003
+       - name: data-store
+         url: http://localhost:8007
+       - name: data-retriever
+         url: http://localhost:8003
+       - name: prompt-manager
+         url: http://localhost:8000
+       - name: llm-provider
+         url: http://localhost:8001
+       - name: format-converter
+         url: http://localhost:8004
+     ```
+   - In `_dev/stock-miniapp/api/orchestrator_service.py`:
+     ```python
+     from monitoring.prometheus_sd import create_prometheus_targets, load_services_config
+     from pathlib import Path
+     
+     # Load configuration from YAML file
+     config_path = Path(__file__).parent / "monitoring_config.yaml"
+     services_config = load_services_config(config_path)
+     
+     @app.get("/monitoring/targets")
+     async def get_monitoring_targets():
+         """Returns Prometheus HTTP SD format targets for this mini-app's services"""
+         return create_prometheus_targets(services_config, miniapp_name="stock-miniapp")
+     ```
+   - Note: `load_services_config()` returns `Dict[str, str]` mapping service names to URLs
+   - Alternative: Environment variables can override config file values (config file as default, env vars for overrides)
+
+4. **Prometheus configuration:**
+   - Update `_dev/monitoring/prometheus/prometheus.yml`:
+     ```yaml
+     scrape_configs:
+       # Use HTTP Service Discovery to get targets from monitoring service
+       - job_name: 'all-services'
+         http_sd_configs:
+           - url: 'http://localhost:8008/monitoring/targets'
+             refresh_interval: 30s
+     ```
+   - Monitoring service runs on port 8008 (or configurable)
+   - Prometheus polls monitoring service, which aggregates from all mini-apps
+
+5. **Service discovery (configuration-based):**
+   - Monitoring service maintains list of mini-app URLs in config file
+   - Format: `_dev/monitoring/config.yml`:
+     ```yaml
+     miniapps:
+       - name: stock-miniapp
+         url: http://localhost:3003
+       # Future: can add more mini-apps here
+     ```
+   - For 1-3 mini-apps per customer, manual configuration is sufficient
+   - Future enhancement: auto-discovery via service registry or port scanning (optional)
+
+6. **Response format (Prometheus HTTP SD):**
+   - Mini-app endpoint returns:
+     ```json
+     [
+       {
+         "targets": ["localhost:8007"],
+         "labels": {
+           "job": "data-store",
+           "instance": "data-store-service",
+           "miniapp": "stock-miniapp"
+         }
+       },
+       {
+         "targets": ["localhost:8001"],
+         "labels": {
+           "job": "llm-provider",
+           "instance": "llm-provider-service",
+           "miniapp": "stock-miniapp"
+         }
+       }
+     ]
+     ```
+   - Monitoring service aggregates multiple mini-app responses into single list
+
+7. **Future mini-apps:**
+   - Each mini-app follows the same pattern:
+     - Install monitoring library
+     - Import `create_prometheus_targets`
+     - Provide their service configuration
+     - Expose `GET /monitoring/targets` endpoint
+   - Add mini-app URL to monitoring service config
+   - No changes needed to Prometheus config
+
+8. **Scaling considerations:**
+   - For 1-3 mini-apps per customer: polling every 30s is efficient
+   - If scaling becomes an issue: can add messaging queue (RabbitMQ/Kafka) between mini-apps and monitoring service
+   - Architecture supports this extension without major changes
+
+**Implementation Execution Plan:**
+
+The implementation should proceed in the following order:
+
+1. **Create Python package structure with pyproject.toml**
+   - Create `_dev/monitoring/` directory structure
+   - Add `pyproject.toml` with dependencies
+   - Create `src/monitoring/` directory and `__init__.py`
+
+2. **Implement utility functions in `prometheus_sd.py`**
+   - Implement `load_services_config()` to load YAML config files
+   - Implement `format_target_url()` to format URLs for Prometheus
+   - Implement `create_prometheus_targets()` to convert config to Prometheus HTTP SD format
+
+3. **Create standalone monitoring API service with polling and caching**
+   - Implement `api_service.py` with FastAPI application
+   - Add asyncio periodic polling task
+   - Implement hash-based caching mechanism
+   - Add endpoints: `GET /monitoring/targets`, `GET /monitoring/health`, `POST /monitoring/refresh`, `POST /monitoring/refresh/{miniapp_url}`
+   - Create `config.yml` for monitoring service configuration
+
+4. **Integrate into stock-miniapp as example**
+   - Install monitoring library in stock-miniapp venv
+   - Create `monitoring_config.yaml` with service configurations
+   - Add `GET /monitoring/targets` endpoint to `orchestrator_service.py`
+   - Test integration
+
+5. **Update Prometheus configuration**
+   - Update `_dev/monitoring/prometheus/prometheus.yml` to use HTTP SD
+   - Configure to poll monitoring service endpoint
+   - Verify Prometheus can discover and scrape all services
 
 ### Test-agent
 

@@ -31,12 +31,13 @@ get_service_name() {
         8005) echo "model-trainer" ;;
         8006) echo "test-agent" ;;
         8007) echo "data-store" ;;
+        8008) echo "monitoring-service" ;;
         *) echo "Unknown" ;;
     esac
 }
 
 # All ports to test
-ALL_PORTS=(3000 3001 3002 3003 8000 8001 8002 8003 8004 8005 8006 8007)
+ALL_PORTS=(3000 3001 3002 3003 8000 8001 8002 8003 8004 8005 8006 8007 8008)
 
 # Required services for prompt flow
 REQUIRED_PORTS=(3002 3003 8000 8001 8003 8004 8007)

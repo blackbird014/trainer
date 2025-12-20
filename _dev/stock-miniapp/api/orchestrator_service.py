@@ -7,6 +7,7 @@ Run on port 3001/api (integrated with Express server).
 
 import os
 import logging
+from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse, PlainTextResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,6 +20,14 @@ from orchestrator import PromptOrchestrator
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Import monitoring utilities
+try:
+    from monitoring.prometheus_sd import create_prometheus_targets, load_services_config
+    MONITORING_AVAILABLE = True
+except ImportError:
+    MONITORING_AVAILABLE = False
+    logger.warning("Monitoring library not available. Install with: pip install -e ../../monitoring")
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -201,6 +210,107 @@ async def get_json_result(run_id: str):
     except Exception as e:
         logger.error(f"Error retrieving JSON: {str(e)}", extra={"run_id": run_id}, exc_info=True)
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@app.get("/monitoring/targets")
+async def get_monitoring_targets():
+    """
+    Returns Prometheus HTTP SD format targets for this mini-app's services.
+    
+    Requires monitoring library to be installed:
+    pip install -e ../../monitoring
+    """
+    if not MONITORING_AVAILABLE:
+        raise HTTPException(
+            status_code=503,
+            detail="Monitoring library not available. Install with: pip install -e ../../monitoring"
+        )
+    
+    try:
+        # Load configuration from YAML file
+        config_path = Path(__file__).parent / "monitoring_config.yaml"
+        services_config = load_services_config(config_path)
+        
+        # Convert to Prometheus format
+        targets = create_prometheus_targets(services_config, miniapp_name="stock-miniapp")
+        
+        return targets
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Monitoring configuration file not found: monitoring_config.yaml"
+        )
+    except Exception as e:
+        logger.error(f"Error generating monitoring targets: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@app.get("/monitoring/test")
+async def test_monitoring():
+    """
+    Test endpoint for monitoring functionality.
+    Returns status of monitoring integration and test results.
+    """
+    result = {
+        "monitoring_available": MONITORING_AVAILABLE,
+        "status": "ok",
+        "tests": {}
+    }
+    
+    if not MONITORING_AVAILABLE:
+        result["status"] = "error"
+        result["error"] = "Monitoring library not available. Install with: pip install -e ../../monitoring"
+        return result
+    
+    # Test 1: Check config file exists
+    config_path = Path(__file__).parent / "monitoring_config.yaml"
+    result["tests"]["config_file_exists"] = config_path.exists()
+    
+    if not config_path.exists():
+        result["status"] = "error"
+        result["error"] = f"Monitoring configuration file not found: monitoring_config.yaml"
+        return result
+    
+    # Test 2: Load and parse config
+    try:
+        services_config = load_services_config(config_path)
+        result["tests"]["config_load"] = True
+        result["tests"]["services_count"] = len(services_config)
+        result["tests"]["services"] = list(services_config.keys())
+    except Exception as e:
+        result["status"] = "error"
+        result["tests"]["config_load"] = False
+        result["error"] = f"Failed to load config: {str(e)}"
+        return result
+    
+    # Test 3: Generate targets
+    try:
+        targets = create_prometheus_targets(services_config, miniapp_name="stock-miniapp")
+        result["tests"]["targets_generation"] = True
+        result["tests"]["targets_count"] = len(targets)
+        result["tests"]["targets"] = targets
+    except Exception as e:
+        result["status"] = "error"
+        result["tests"]["targets_generation"] = False
+        result["error"] = f"Failed to generate targets: {str(e)}"
+        return result
+    
+    # Test 4: Try to reach monitoring service (if available)
+    monitoring_url = os.getenv("MONITORING_SERVICE_URL", "http://localhost:8008")
+    try:
+        async with httpx.AsyncClient(timeout=2.0) as client:
+            health_response = await client.get(f"{monitoring_url}/monitoring/health")
+            if health_response.status_code == 200:
+                result["tests"]["monitoring_service_reachable"] = True
+                result["tests"]["monitoring_service_health"] = health_response.json()
+            else:
+                result["tests"]["monitoring_service_reachable"] = False
+                result["tests"]["monitoring_service_error"] = f"Status {health_response.status_code}"
+    except Exception as e:
+        result["tests"]["monitoring_service_reachable"] = False
+        result["tests"]["monitoring_service_error"] = str(e)
+    
+    return result
 
 
 if __name__ == "__main__":

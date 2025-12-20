@@ -13,6 +13,71 @@ const ORCHESTRATOR_URL = process.env.ORCHESTRATOR_URL || 'http://127.0.0.1:3002'
 app.use(cors());
 app.use(express.json());
 
+// Proxy for /monitoring/* routes (to orchestrator)
+app.use('/monitoring', (req, res) => {
+    const targetPath = '/monitoring' + req.url;  // Add back /monitoring prefix (Express strips it)
+    const targetPort = 3002;
+    
+    console.log(`[Proxy] ${req.method} ${req.url} -> ${ORCHESTRATOR_URL}${targetPath}`);
+    
+    const body = req.body ? JSON.stringify(req.body) : '';
+    
+    const options = {
+        hostname: '127.0.0.1',
+        port: targetPort,
+        path: targetPath,
+        method: req.method,
+        headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(body)
+        }
+    };
+    
+    const proxyReq = http.request(options, (proxyRes) => {
+        console.log(`[Proxy] Response: ${proxyRes.statusCode} for ${req.url}`);
+        
+        res.status(proxyRes.statusCode);
+        
+        Object.keys(proxyRes.headers).forEach(key => {
+            if (!['connection', 'transfer-encoding'].includes(key.toLowerCase())) {
+                res.setHeader(key, proxyRes.headers[key]);
+            }
+        });
+        
+        proxyRes.on('data', (chunk) => {
+            res.write(chunk);
+        });
+        
+        proxyRes.on('end', () => {
+            res.end();
+            console.log(`[Proxy] Completed: ${req.url}`);
+        });
+    });
+    
+    proxyReq.on('error', (err) => {
+        console.error('[Proxy Error]', err.message);
+        if (!res.headersSent) {
+            res.status(500).json({ 
+                error: 'Proxy error', 
+                message: err.message 
+            });
+        }
+    });
+    
+    proxyReq.setTimeout(120000, () => {
+        console.error('[Proxy] Timeout for', req.url);
+        proxyReq.destroy();
+        if (!res.headersSent) {
+            res.status(504).json({ error: 'Gateway timeout' });
+        }
+    });
+    
+    if (body) {
+        proxyReq.write(body);
+    }
+    proxyReq.end();
+});
+
 // Manual proxy for API requests (bypassing http-proxy-middleware issues)
 // IMPORTANT: This must be BEFORE static file serving to catch /api routes
 app.use('/api', (req, res) => {

@@ -106,3 +106,11 @@ scrape_configs:
           service: 'data-store-api'
           environment: 'development'
 
+  # Dynamic service discovery via HTTP SD
+  # Monitoring service aggregates targets from all mini-apps
+  - job_name: 'all-services'
+    scrape_interval: 15s
+    http_sd_configs:
+      - url: 'http://host.docker.internal:8008/monitoring/targets'
+        refresh_interval: 30s
+
