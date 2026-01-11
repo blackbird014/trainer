@@ -15,7 +15,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(format_converter_operations_total[5m])",
           "legendFormat": "{{source_format}} → {{target_format}} - {{status}}",
@@ -37,7 +37,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "histogram_quantile(0.95, rate(format_converter_operation_duration_seconds_bucket[5m]))",
           "legendFormat": "{{source_format}} → {{target_format}}",
@@ -59,7 +59,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(format_converter_operations_total)",
           "refId": "A"
@@ -80,7 +80,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(rate(format_converter_operations_total{status=\"success\"}[5m])) / sum(rate(format_converter_operations_total[5m])) * 100",
           "refId": "A"
@@ -103,7 +103,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(format_converter_errors_total)",
           "refId": "A"
@@ -135,7 +135,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(format_converter_auto_detections_total)",
           "refId": "A"
@@ -156,7 +156,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum by (source_format, target_format) (format_converter_operations_total)",
           "legendFormat": "{{source_format}} → {{target_format}}",
@@ -173,7 +173,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(format_converter_data_size_bytes_sum[5m])",
           "legendFormat": "{{source_format}} → {{target_format}}",
@@ -195,7 +195,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(format_converter_errors_total[5m])",
           "legendFormat": "{{source_format}} → {{target_format}} - {{error_type}}",
@@ -228,7 +228,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum by (detected_format) (format_converter_auto_detections_total)",
           "legendFormat": "{{detected_format}}",
@@ -245,7 +245,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(format_converter_operation_duration_seconds_sum[5m]) / rate(format_converter_operation_duration_seconds_count[5m])",
           "legendFormat": "{{source_format}} → {{target_format}}",
@@ -267,7 +267,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(format_converter_data_size_bytes_sum[5m]) / rate(format_converter_data_size_bytes_count[5m])",
           "legendFormat": "{{source_format}} → {{target_format}}",

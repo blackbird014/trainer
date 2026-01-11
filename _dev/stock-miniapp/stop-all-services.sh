@@ -37,6 +37,20 @@ if docker ps --format '{{.Names}}' | grep -q "^mongodb$"; then
     stopped=$((stopped + 1))
 fi
 
+# Stop monitoring stack (Prometheus, Grafana, Loki, Promtail)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+MONITORING_DIR="$PROJECT_ROOT/_dev/monitoring"
+
+if [ -f "$MONITORING_DIR/docker-compose.yml" ]; then
+    cd "$MONITORING_DIR"
+    if docker-compose ps 2>/dev/null | grep -q "Up"; then
+        echo "  Stopping monitoring stack (Prometheus, Grafana, Loki, Promtail)..."
+        docker-compose down > /dev/null 2>&1
+        stopped=$((stopped + 1))
+    fi
+fi
+
 if [ $stopped -eq 0 ]; then
     echo -e "${YELLOW}No running services found.${NC}"
 else

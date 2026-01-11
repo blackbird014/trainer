@@ -15,7 +15,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(model_trainer_training_runs_total[5m])",
           "legendFormat": "{{framework}} - {{status}}",
@@ -37,7 +37,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "histogram_quantile(0.95, rate(model_trainer_training_duration_seconds_bucket[5m]))",
           "legendFormat": "{{framework}}",
@@ -59,7 +59,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(model_trainer_training_runs_total)",
           "refId": "A"
@@ -80,7 +80,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(rate(model_trainer_training_runs_total{status=\"success\"}[5m])) / sum(rate(model_trainer_training_runs_total[5m])) * 100",
           "refId": "A"
@@ -103,7 +103,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(model_trainer_active_training_runs)",
           "refId": "A"
@@ -124,7 +124,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(model_trainer_model_versions_total)",
           "refId": "A"
@@ -145,7 +145,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum by (framework) (model_trainer_training_runs_total)",
           "legendFormat": "{{framework}}",
@@ -162,7 +162,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(model_trainer_dataset_size_sum[5m])",
           "legendFormat": "{{dataset_type}}",
@@ -184,7 +184,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(model_trainer_evaluation_runs_total[5m])",
           "legendFormat": "{{model_version}} - {{status}}",
@@ -206,7 +206,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(model_trainer_checkpoint_size_bytes_sum[5m])",
           "legendFormat": "{{framework}}",
@@ -228,7 +228,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(model_trainer_errors_total[5m])",
           "legendFormat": "{{error_type}} - {{framework}}",
@@ -261,7 +261,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(model_trainer_training_duration_seconds_sum[5m]) / rate(model_trainer_training_duration_seconds_count[5m])",
           "legendFormat": "{{framework}}",

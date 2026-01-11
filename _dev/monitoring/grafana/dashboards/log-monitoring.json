@@ -1,0 +1,333 @@
+{
+  "id": null,
+  "uid": "log-monitoring",
+  "title": "Log Monitoring Dashboard",
+  "tags": ["logs", "loki", "trainer"],
+  "timezone": "browser",
+  "schemaVersion": 27,
+  "version": 1,
+  "refresh": "10s",
+  "panels": [
+      {
+        "id": 1,
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "type": "logs",
+        "title": "Recent Logs (All Services)",
+        "targets": [
+          {
+            "expr": "{job=~\".+\"}",
+            "refId": "A",
+            "datasource": {
+              "type": "loki",
+              "uid": "loki"
+            }
+          }
+        ],
+        "options": {
+          "dedupStrategy": "none",
+          "enableLogDetails": true,
+          "prettifyLogMessage": false,
+          "showCommonLabels": false,
+          "showLabels": true,
+          "showTime": true,
+          "sortOrder": "Descending",
+          "wrapLogMessage": false
+        }
+      },
+      {
+        "id": 2,
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "type": "logs",
+        "title": "Error Logs",
+        "targets": [
+          {
+            "expr": "{job=~\".+\"} |~ \"(?i)(ERROR|CRITICAL|FATAL)\"",
+            "refId": "A",
+            "datasource": {
+              "type": "loki",
+              "uid": "loki"
+            }
+          }
+        ],
+        "options": {
+          "dedupStrategy": "none",
+          "enableLogDetails": true,
+          "prettifyLogMessage": false,
+          "showCommonLabels": false,
+          "showLabels": true,
+          "showTime": true,
+          "sortOrder": "Descending",
+          "wrapLogMessage": false
+        }
+      },
+      {
+        "id": 3,
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 8},
+        "type": "logs",
+        "title": "Stock Mini-App Logs",
+        "targets": [
+          {
+            "expr": "{miniapp=\"stock-miniapp\"}",
+            "refId": "A",
+            "datasource": {
+              "type": "loki",
+              "uid": "loki"
+            }
+          }
+        ],
+        "options": {
+          "dedupStrategy": "none",
+          "enableLogDetails": true,
+          "prettifyLogMessage": false,
+          "showCommonLabels": false,
+          "showLabels": true,
+          "showTime": true,
+          "sortOrder": "Descending",
+          "wrapLogMessage": false
+        }
+      },
+      {
+        "id": 4,
+        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 8},
+        "type": "logs",
+        "title": "Data Store Logs",
+        "targets": [
+          {
+            "expr": "{module=\"data-store\"}",
+            "refId": "A",
+            "datasource": {
+              "type": "loki",
+              "uid": "loki"
+            }
+          }
+        ],
+        "options": {
+          "dedupStrategy": "none",
+          "enableLogDetails": true,
+          "prettifyLogMessage": false,
+          "showCommonLabels": false,
+          "showLabels": true,
+          "showTime": true,
+          "sortOrder": "Descending",
+          "wrapLogMessage": false
+        }
+      },
+      {
+        "id": 5,
+        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 8},
+        "type": "logs",
+        "title": "Prompt Manager Logs",
+        "targets": [
+          {
+            "expr": "{module=\"prompt-manager\"}",
+            "refId": "A",
+            "datasource": {
+              "type": "loki",
+              "uid": "loki"
+            }
+          }
+        ],
+        "options": {
+          "dedupStrategy": "none",
+          "enableLogDetails": true,
+          "prettifyLogMessage": false,
+          "showCommonLabels": false,
+          "showLabels": true,
+          "showTime": true,
+          "sortOrder": "Descending",
+          "wrapLogMessage": false
+        }
+      },
+      {
+        "id": 6,
+        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 8},
+        "type": "logs",
+        "title": "LLM Provider Logs",
+        "targets": [
+          {
+            "expr": "{module=\"llm-provider\"}",
+            "refId": "A",
+            "datasource": {
+              "type": "loki",
+              "uid": "loki"
+            }
+          }
+        ],
+        "options": {
+          "dedupStrategy": "none",
+          "enableLogDetails": true,
+          "prettifyLogMessage": false,
+          "showCommonLabels": false,
+          "showLabels": true,
+          "showTime": true,
+          "sortOrder": "Descending",
+          "wrapLogMessage": false
+        }
+      },
+      {
+        "id": 7,
+        "gridPos": {"h": 6, "w": 12, "x": 0, "y": 16},
+        "type": "stat",
+        "title": "Log Volume by Service (Last 5 minutes)",
+        "targets": [
+          {
+            "expr": "sum(count_over_time({job=~\".+\"}[5m])) by (job)",
+            "refId": "A",
+            "datasource": {
+              "type": "loki",
+              "uid": "loki"
+            }
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value",
+          "orientation": "horizontal"
+        }
+      },
+      {
+        "id": 8,
+        "gridPos": {"h": 6, "w": 12, "x": 12, "y": 16},
+        "type": "timeseries",
+        "title": "Error Rate Over Time",
+        "targets": [
+          {
+            "expr": "sum(rate({job=~\".+\"} |~ \"(?i)(ERROR|CRITICAL|FATAL)\" [5m])) by (job)",
+            "refId": "A",
+            "datasource": {
+              "type": "loki",
+              "uid": "loki"
+            }
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "hideFrom": {
+                "tooltip": false,
+                "viz": false,
+                "legend": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "never",
+              "spanNulls": false
+            }
+          }
+        }
+      }
+    ],
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "templating": {
+      "list": [
+        {
+          "name": "miniapp",
+          "type": "query",
+          "current": {
+            "selected": false,
+            "text": "All",
+            "value": "$__all"
+          },
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "definition": "label_values(miniapp)",
+          "hide": 0,
+          "includeAll": true,
+          "label": "Mini-App",
+          "multi": true,
+          "options": [],
+          "query": {
+            "query": "label_values(miniapp)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0
+        },
+        {
+          "name": "module",
+          "type": "query",
+          "current": {
+            "selected": false,
+            "text": "All",
+            "value": "$__all"
+          },
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "definition": "label_values(module)",
+          "hide": 0,
+          "includeAll": true,
+          "label": "Module",
+          "multi": true,
+          "options": [],
+          "query": {
+            "query": "label_values(module)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0
+        },
+        {
+          "name": "service",
+          "type": "query",
+          "current": {
+            "selected": false,
+            "text": "All",
+            "value": "$__all"
+          },
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "definition": "label_values(job)",
+          "hide": 0,
+          "includeAll": true,
+          "label": "Service",
+          "multi": true,
+          "options": [],
+          "query": {
+            "query": "label_values(job)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0
+        }
+      ]
+    },
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "liveNow": false,
+  "weekStart": ""
+}
+

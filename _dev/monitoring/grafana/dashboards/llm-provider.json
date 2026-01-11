@@ -15,7 +15,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(llm_provider_requests_total[5m])",
           "legendFormat": "{{provider}} - {{model}}",
@@ -37,7 +37,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "histogram_quantile(0.95, rate(llm_provider_request_duration_seconds_bucket[5m]))",
           "legendFormat": "{{provider}}",
@@ -59,7 +59,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(llm_provider_requests_total)",
           "refId": "A"
@@ -80,7 +80,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(llm_provider_tokens_total)",
           "refId": "A"
@@ -101,7 +101,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(llm_provider_cost_total)",
           "refId": "A"
@@ -123,7 +123,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(rate(llm_provider_errors_total[5m])) / sum(rate(llm_provider_requests_total[5m])) * 100",
           "refId": "A"
@@ -157,7 +157,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(llm_provider_tokens_total[5m]) / rate(llm_provider_requests_total[5m])",
           "legendFormat": "{{provider}}",
@@ -179,7 +179,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(llm_provider_cost_total[5m]) / rate(llm_provider_requests_total[5m])",
           "legendFormat": "{{provider}}",
@@ -202,7 +202,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum by (provider) (llm_provider_requests_total)",
           "legendFormat": "{{provider}}",
@@ -219,7 +219,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(llm_provider_errors_total[5m])",
           "legendFormat": "{{provider}} - {{error_type}}",

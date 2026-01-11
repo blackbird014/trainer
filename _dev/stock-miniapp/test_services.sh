@@ -50,16 +50,16 @@ test_port() {
     printf "Port %-4s %-30s " "$port" "$name"
     
     # Try health endpoint first
-    response=$(curl -s -m 2 http://localhost:$port/health 2>&1)
-    if echo "$response" | grep -q "healthy\|ok\|name\|service"; then
+    response=$(curl -s -L -m 2 http://localhost:$port/api/health 2>&1 || curl -s -L -m 2 http://localhost:$port/health 2>&1)
+    if echo "$response" | grep -q "healthy\|ok\|name\|service\|database"; then
         echo -e "${GREEN}✅ RUNNING${NC}"
         echo "$response" | head -1 | sed 's/^/  → /' | cut -c1-70
         return 0
     fi
     
     # Try root endpoint
-    response=$(curl -s -m 2 http://localhost:$port/ 2>&1)
-    if echo "$response" | grep -q "html\|name\|service\|version"; then
+    response=$(curl -s -L -m 2 http://localhost:$port/ 2>&1)
+    if echo "$response" | grep -q "html\|name\|service\|version\|Grafana"; then
         echo -e "${GREEN}✅ RUNNING${NC}"
         echo "$response" | head -1 | cut -c1-70 | sed 's/^/  → /'
         return 0

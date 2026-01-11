@@ -1,0 +1,85 @@
+log_sources:
+  # All services write logs to _dev/stock-miniapp/logs/ directory
+  # Each service has its own log file: data-store.log, data-retriever.log, etc.
+  # We'll use the logs directory and filter by filename pattern for each service
+  
+  # Data Store logs
+  - name: data-store
+    path: logs
+    labels:
+      miniapp: stock-miniapp
+      module: data-store
+      environment: development
+    patterns:
+      - "data-store.log"
+  
+  # Data Retriever logs
+  - name: data-retriever
+    path: logs
+    labels:
+      miniapp: stock-miniapp
+      module: data-retriever
+      environment: development
+    patterns:
+      - "data-retriever.log"
+  
+  # Prompt Manager logs
+  - name: prompt-manager
+    path: logs
+    labels:
+      miniapp: stock-miniapp
+      module: prompt-manager
+      environment: development
+    patterns:
+      - "prompt-manager.log"
+  
+  # LLM Provider logs
+  - name: llm-provider
+    path: logs
+    labels:
+      miniapp: stock-miniapp
+      module: llm-provider
+      environment: development
+    patterns:
+      - "llm-provider.log"
+  
+  # Format Converter logs
+  - name: format-converter
+    path: logs
+    labels:
+      miniapp: stock-miniapp
+      module: format-converter
+      environment: development
+    patterns:
+      - "format-converter.log"
+  
+  # Orchestrator logs
+  - name: orchestrator
+    path: logs
+    labels:
+      miniapp: stock-miniapp
+      service: orchestrator
+      environment: development
+    patterns:
+      - "orchestrator.log"
+  
+  # Web Server logs
+  - name: web-server
+    path: logs
+    labels:
+      miniapp: stock-miniapp
+      service: web-server
+      environment: development
+    patterns:
+      - "web-server.log"
+  
+  # Monitoring service logs
+  - name: monitoring
+    path: logs
+    labels:
+      miniapp: stock-miniapp
+      service: monitoring
+      environment: development
+    patterns:
+      - "monitoring.log"
+

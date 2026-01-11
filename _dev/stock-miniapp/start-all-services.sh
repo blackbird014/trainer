@@ -89,6 +89,17 @@ echo "                    STARTING ALL SERVICES FOR STOCK MINI-APP"
 echo "=================================================================================="
 echo ""
 
+# Step 0: Ensure log directories exist for all modules
+echo -e "${BLUE}Step 0: Ensuring log directories exist...${NC}"
+mkdir -p "$PROJECT_ROOT/_dev/stock-miniapp/logs"
+mkdir -p "$PROJECT_ROOT/_dev/data-store/logs"
+mkdir -p "$PROJECT_ROOT/_dev/data-retriever/logs"
+mkdir -p "$PROJECT_ROOT/_dev/prompt-manager/logs"
+mkdir -p "$PROJECT_ROOT/_dev/llm-provider/logs"
+mkdir -p "$PROJECT_ROOT/_dev/format-converter/logs"
+echo -e "  ${GREEN}✓ Log directories ready${NC}"
+echo ""
+
 # Step 1: Start MongoDB
 echo -e "${BLUE}Step 1: Setting up MongoDB...${NC}"
 cd "$PROJECT_ROOT/_dev/data-store"
@@ -215,8 +226,19 @@ else
 fi
 echo ""
 
-# Step 9: Start monitoring service (port 8008) - Optional but recommended
-echo -e "${BLUE}Step 9: Starting monitoring service (port 8008)...${NC}"
+# Step 9: Start monitoring stack (Prometheus, Grafana, Loki, Promtail)
+echo -e "${BLUE}Step 9: Starting monitoring stack (Prometheus, Grafana, Loki, Promtail)...${NC}"
+cd "$PROJECT_ROOT/_dev/monitoring"
+if ! docker info > /dev/null 2>&1; then
+    echo -e "  ${RED}✗ Docker is not running. Skipping monitoring stack.${NC}"
+    echo ""
+else
+    bash "$PROJECT_ROOT/_dev/monitoring/bootstrap-monitoring.sh"
+fi
+echo ""
+
+# Step 10: Start monitoring service (port 8008) - Optional but recommended
+echo -e "${BLUE}Step 10: Starting monitoring service (port 8008)...${NC}"
 # Use orchestrator's venv (monitoring package should be installed there)
 cd "$PROJECT_ROOT/_dev/stock-miniapp/api"
 if [ -d "venv" ]; then
@@ -239,8 +261,8 @@ sleep 2
 wait_for_service 8008 "monitoring" || echo -e "  ${YELLOW}⚠ Monitoring service started but not ready (may need more time)${NC}"
 echo ""
 
-# Step 10: Start Express web server (port 3003)
-echo -e "${BLUE}Step 10: Starting Express web server (port 3003)...${NC}"
+# Step 11: Start Express web server (port 3003)
+echo -e "${BLUE}Step 11: Starting Express web server (port 3003)...${NC}"
 cd "$PROJECT_ROOT/_dev/stock-miniapp/web"
 if [ ! -d "node_modules" ]; then
     echo "  Installing npm dependencies..."
@@ -254,6 +276,13 @@ echo "  Log: $SCRIPT_DIR/logs/web-server.log"
 sleep 3
 wait_for_service 3003 "web-server"
 echo ""
+
+# Step 12: Final Verification
+echo -e "${BLUE}Step 12: Final Verification...${NC}"
+if [ -f "$PROJECT_ROOT/_dev/monitoring/verify-monitoring.sh" ]; then
+    bash "$PROJECT_ROOT/_dev/monitoring/verify-monitoring.sh"
+fi
+bash "$SCRIPT_DIR/test_services.sh"
 
 echo "=================================================================================="
 echo -e "                    ${GREEN}ALL SERVICES STARTED SUCCESSFULLY!${NC}"
@@ -270,7 +299,14 @@ echo "  - orchestrator:    http://localhost:3002"
 echo "  - monitoring:       http://localhost:8008"
 echo "  - Web UI:           http://localhost:3003"
 echo ""
+echo "Monitoring stack:"
+echo "  - Prometheus:       http://localhost:9090"
+echo "  - Grafana:          http://localhost:3000 (admin/admin)"
+echo "  - Loki:             http://localhost:3100"
+echo "  - Promtail:         (collecting logs)"
+echo ""
 echo -e "${YELLOW}Logs are available in: $SCRIPT_DIR/logs/${NC}"
+echo -e "${YELLOW}View logs in Grafana: http://localhost:3000 → Dashboards → Log Monitoring${NC}"
 echo ""
 echo -e "${BLUE}Press Ctrl+C to stop all services${NC}"
 echo ""

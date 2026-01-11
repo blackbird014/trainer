@@ -1,0 +1,80 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+positions:
+  filename: /tmp/positions.yaml
+clients:
+- url: http://loki:3100/loki/api/v1/push
+scrape_configs:
+- job_name: data-store
+  static_configs:
+  - targets:
+    - localhost
+    labels:
+      miniapp: stock-miniapp
+      module: data-store
+      environment: development
+      __path__: /host-dev/stock-miniapp/logs/data-store.log
+- job_name: data-retriever
+  static_configs:
+  - targets:
+    - localhost
+    labels:
+      miniapp: stock-miniapp
+      module: data-retriever
+      environment: development
+      __path__: /host-dev/stock-miniapp/logs/data-retriever.log
+- job_name: prompt-manager
+  static_configs:
+  - targets:
+    - localhost
+    labels:
+      miniapp: stock-miniapp
+      module: prompt-manager
+      environment: development
+      __path__: /host-dev/stock-miniapp/logs/prompt-manager.log
+- job_name: llm-provider
+  static_configs:
+  - targets:
+    - localhost
+    labels:
+      miniapp: stock-miniapp
+      module: llm-provider
+      environment: development
+      __path__: /host-dev/stock-miniapp/logs/llm-provider.log
+- job_name: format-converter
+  static_configs:
+  - targets:
+    - localhost
+    labels:
+      miniapp: stock-miniapp
+      module: format-converter
+      environment: development
+      __path__: /host-dev/stock-miniapp/logs/format-converter.log
+- job_name: orchestrator
+  static_configs:
+  - targets:
+    - localhost
+    labels:
+      miniapp: stock-miniapp
+      service: orchestrator
+      environment: development
+      __path__: /host-dev/stock-miniapp/logs/orchestrator.log
+- job_name: web-server
+  static_configs:
+  - targets:
+    - localhost
+    labels:
+      miniapp: stock-miniapp
+      service: web-server
+      environment: development
+      __path__: /host-dev/stock-miniapp/logs/web-server.log
+- job_name: monitoring
+  static_configs:
+  - targets:
+    - localhost
+    labels:
+      miniapp: stock-miniapp
+      service: monitoring
+      environment: development
+      __path__: /host-dev/stock-miniapp/logs/monitoring.log

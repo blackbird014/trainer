@@ -15,7 +15,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(prompt_manager_operations_total[5m])",
           "legendFormat": "{{operation}} - {{status}}",
@@ -37,7 +37,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "histogram_quantile(0.95, rate(prompt_manager_operation_duration_seconds_bucket[5m]))",
           "legendFormat": "{{operation}}",
@@ -59,7 +59,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(prompt_manager_tokens_total)",
           "refId": "A"
@@ -80,7 +80,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(prompt_manager_cost_total)",
           "refId": "A"
@@ -102,7 +102,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(prompt_manager_security_validation_total)",
           "refId": "A"
@@ -123,7 +123,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(prompt_manager_security_injection_detected_total)",
           "refId": "A"
@@ -154,7 +154,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(prompt_manager_cache_hits_total[5m]) / (rate(prompt_manager_cache_hits_total[5m]) + rate(prompt_manager_cache_misses_total[5m]))",
           "legendFormat": "Hit Ratio",
@@ -178,7 +178,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(prompt_manager_cache_hits_total[5m])",
           "legendFormat": "Hits",
@@ -187,7 +187,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(prompt_manager_cache_misses_total[5m])",
           "legendFormat": "Misses",
@@ -209,7 +209,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(prompt_manager_security_validation_total[5m])",
           "legendFormat": "Validations/sec",
@@ -231,7 +231,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(prompt_manager_security_rate_limit_hits_total[5m])",
           "legendFormat": "Rate Limit Hits/sec",

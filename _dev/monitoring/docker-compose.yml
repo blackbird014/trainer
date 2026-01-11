@@ -37,11 +37,48 @@ services:
       - monitoring
     depends_on:
       - prometheus
+      - loki
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:latest
+    container_name: trainer_monitoring_loki
+    ports:
+      - "3100:3100"
+    environment:
+      - TZ=Europe/Rome
+    volumes:
+      - ./loki-config.yml:/etc/loki/local-config.yaml
+      - loki-data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: trainer_monitoring_promtail
+    environment:
+      - TZ=Europe/Rome
+    volumes:
+      - ./promtail-config.yml:/etc/promtail/config.yml
+      - /Users/andreamerli/projects/development/trainer/_dev/stock-miniapp/logs:/host-dev/stock-miniapp/logs:ro
+      - /Users/andreamerli/projects/development/trainer/_dev/data-store/logs:/host-dev/data-store/logs:ro
+      - /Users/andreamerli/projects/development/trainer/_dev/data-retriever/logs:/host-dev/data-retriever/logs:ro
+      - /Users/andreamerli/projects/development/trainer/_dev/prompt-manager/logs:/host-dev/prompt-manager/logs:ro
+      - /Users/andreamerli/projects/development/trainer/_dev/llm-provider/logs:/host-dev/llm-provider/logs:ro
+      - /Users/andreamerli/projects/development/trainer/_dev/format-converter/logs:/host-dev/format-converter/logs:ro
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - monitoring
+    depends_on:
+      - loki
     restart: unless-stopped
 
 volumes:
   prometheus-data:
   grafana-data:
+  loki-data:
 
 networks:
   monitoring:

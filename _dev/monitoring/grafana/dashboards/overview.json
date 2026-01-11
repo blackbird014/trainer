@@ -15,7 +15,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(prompt_manager_operations_total[5m])",
           "legendFormat": "Prompt Manager - {{operation}}",
@@ -24,7 +24,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(llm_provider_requests_total[5m])",
           "legendFormat": "LLM Provider - {{provider}}",
@@ -33,7 +33,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(data_retriever_operations_total[5m])",
           "legendFormat": "Data Retriever - {{source}}",
@@ -42,7 +42,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(format_converter_operations_total[5m])",
           "legendFormat": "Format Converter - {{source_format}}→{{target_format}}",
@@ -51,7 +51,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(model_trainer_training_runs_total[5m])",
           "legendFormat": "Model Trainer - {{framework}}",
@@ -60,7 +60,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(data_store_operations_total[5m])",
           "legendFormat": "Data Store - {{operation}}",
@@ -82,7 +82,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(rate(prompt_manager_operations_total[5m]))",
           "refId": "A"
@@ -103,7 +103,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(prompt_manager_tokens_total)",
           "refId": "A"
@@ -124,7 +124,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(prompt_manager_cost_total)",
           "refId": "A"
@@ -146,7 +146,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(prompt_manager_cache_hits_total[5m]) / (rate(prompt_manager_cache_hits_total[5m]) + rate(prompt_manager_cache_misses_total[5m]))",
           "refId": "A"
@@ -169,7 +169,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(rate(prompt_manager_security_validation_total[5m]))",
           "refId": "A"
@@ -190,7 +190,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(prompt_manager_security_injection_detected_total)",
           "refId": "A"
@@ -221,7 +221,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(prompt_manager_security_rate_limit_hits_total)",
           "refId": "A"
@@ -253,7 +253,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(rate(llm_provider_requests_total[5m]))",
           "refId": "A"
@@ -274,7 +274,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(llm_provider_tokens_total)",
           "refId": "A"
@@ -295,7 +295,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(llm_provider_cost_total)",
           "refId": "A"
@@ -317,7 +317,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(rate(llm_provider_errors_total[5m])) / sum(rate(llm_provider_requests_total[5m])) * 100",
           "refId": "A"
@@ -351,7 +351,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(prompt_manager_cost_total) + sum(llm_provider_cost_total)",
           "refId": "A"
@@ -373,7 +373,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "up{job=~\"prompt-manager|prompt-security|llm-provider|data-retriever|data-store|format-converter|model-trainer|test-agent\"}",
           "format": "table",
@@ -413,7 +413,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(prompt_manager_cost_total) or vector(0)",
           "legendFormat": "Prompt Manager",
@@ -422,7 +422,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(llm_provider_cost_total) or vector(0)",
           "legendFormat": "LLM Provider",
@@ -439,7 +439,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(rate(format_converter_operations_total[5m]))",
           "refId": "A"
@@ -460,7 +460,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(rate(format_converter_operations_total{status=\"success\"}[5m])) / sum(rate(format_converter_operations_total[5m])) * 100",
           "refId": "A"
@@ -483,7 +483,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(rate(data_retriever_operations_total[5m]))",
           "refId": "A"
@@ -504,7 +504,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "rate(data_retriever_cache_hits_total[5m]) / (rate(data_retriever_cache_hits_total[5m]) + rate(data_retriever_cache_misses_total[5m]))",
           "refId": "A"
@@ -527,7 +527,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(rate(model_trainer_training_runs_total[5m]))",
           "refId": "A"
@@ -548,7 +548,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(rate(model_trainer_training_runs_total{status=\"success\"}[5m])) / sum(rate(model_trainer_training_runs_total[5m])) * 100",
           "refId": "A"
@@ -571,7 +571,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(model_trainer_active_training_runs)",
           "refId": "A"
@@ -592,7 +592,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(model_trainer_model_versions_total)",
           "refId": "A"
@@ -613,7 +613,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(rate(test_agent_test_runs_total[5m]))",
           "refId": "A"
@@ -634,7 +634,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(rate(test_agent_test_runs_total{status=\"success\"}[5m])) / sum(rate(test_agent_test_runs_total[5m])) * 100",
           "refId": "A"
@@ -657,7 +657,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "sum(test_agent_tests_passed_total)",
           "refId": "A"
@@ -678,7 +678,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "__datasource_uid__"
+            "uid": "prometheus"
           },
           "expr": "avg(test_agent_coverage_percentage)",
           "refId": "A"
